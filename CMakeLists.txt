@@ -8,4 +8,7 @@ add_executable(kq
  task.hpp
  event.cpp
  event.hpp
+ select.hpp
+ select.cpp
+ time.hpp
  )

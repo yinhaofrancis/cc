@@ -12,6 +12,7 @@
 #include <signal.h>
 #include "event.hpp"
 #include "task.hpp"
+#include "select.hpp"
 
 void child(int fd[2]){
     auto qq = cc::EventQueue();
@@ -158,10 +159,46 @@ void testvnode(const char* path){
     
 }
 int main(int argc,char* argv[]){
-    cc::Task::sync([](){
-        testvnode("/Users/haoyin/Desktop/m");
-    });
-    
+    int fd[2];
+    pipe(fd);
+    pid_t p = fork();
+    cc::Select select;
+    if(p == 0){
+        int i = 0;
+        while (i < 100)
+        {
+            std::string s = std::to_string(i);
+            write(fd[1],s.data() ,s.size());
+            i++;
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+        close(fd[1]);
+    }else{
+        select.add(fd[0],cc::Select::Config::SelectRead);
+        while (true)
+        {
+            int c = select.wait(5);
+            if(c == 0){
+                std::cout << "timeout" << std::endl;
+            }else{
+                std::vector<int> readfds,errorfd;
+                select.occur_read(readfds);
+                select.occur_error(errorfd);
+                if (errorfd.size() > 0){
+                    std::cout << errorfd.size() << std::endl;
+                }
+                char buff[64];
+                for (auto i = readfds.begin(); i < readfds.end(); i++){
+                    memset(buff,0,sizeof(buff));
+                    read(*i,buff,64);
+                    std::cout << buff << std::endl;
+                }
+            }
+
+
+        }
+        
+    }
 }
 
 void timer(){

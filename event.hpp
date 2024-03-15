@@ -9,11 +9,11 @@
 #include <atomic>
 #include <vector>
 
+#include "time.hpp"
+
 namespace cc
 {
     const int max_event_count = 10;
-
-    typedef double TimeInterval;
 
     class EventQueue
     {
