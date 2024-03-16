@@ -14,9 +14,46 @@
 namespace cc
 {
     const int max_event_count = 10;
-
+    
     class EventQueue
     {
+    public:
+        enum ReadableConfig{
+            LOWAT = NOTE_LOWAT
+        };
+        enum TimerConfig
+        {
+            SECONDS = NOTE_SECONDS,
+            USECONDS = NOTE_USECONDS,
+            NSECONDS = NOTE_NSECONDS,
+            MACHTIME = NOTE_MACHTIME,
+            LEEWAY = NOTE_LEEWAY,        /* ext[1] holds leeway for power aware timers */
+            CRITICAL = NOTE_CRITICAL,    /* system does minimal timer coalescing */
+            BACKGROUND = NOTE_BACKGROUND /* system does maximum timer coalescing */
+
+        };
+        enum ProcessConfig
+        {
+            EXIT         = NOTE_EXIT,
+            EXITSTATUS   = NOTE_EXITSTATUS,
+            FORK         = NOTE_FORK,
+            EXEC         = NOTE_EXEC,
+            SIGNAL       = NOTE_SIGNAL 
+        };
+        enum VnodeConfig
+        {
+            DELETE             = NOTE_DELETE,
+            WRITE              = NOTE_WRITE,
+            EXTEND             = NOTE_EXTEND,
+            ATTRIB             = NOTE_ATTRIB,
+            LINK               = NOTE_LINK,
+            RENAME             = NOTE_RENAME,
+            REVOKE             = NOTE_REVOKE,
+            FUNLOCK            = NOTE_FUNLOCK,
+            LEASE_DOWNGRADE    = NOTE_LEASE_DOWNGRADE,
+            LEASE_RELEASE      = NOTE_LEASE_RELEASE
+        };
+
     public:
         void change(struct kevent &e);
 
@@ -46,17 +83,17 @@ namespace cc
 
         int wait(int sec, struct kevent &event);
 
-        void add_timer(uint timerId, uint32_t fflag, intptr_t data);
+        void add_timer(uint timerId, TimerConfig config, long data);
 
         void add_signal(uint signal, intptr_t data);
 
-        void add_fd_readable(int fd, uint32_t fflag, intptr_t data);
+        void add_fd_readable(int fd, ReadableConfig fflag, intptr_t data);
 
         void add_fd_writable(int fd);
-       
-        void add_process(pid_t pid, uint32_t fflag);
 
-        void add_vnode(int fd, uint32_t fflag);
+        void add_process(pid_t pid, ProcessConfig fflag);
+
+        void add_vnode(int fd, VnodeConfig config);
 
     private:
         int m_kq = kqueue();

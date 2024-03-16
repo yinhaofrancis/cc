@@ -36,9 +36,9 @@ void cc::EventQueue::change(uintptr_t ident, int16_t filter, uint16_t flag, uint
     change(n_change);
 }
 
-void cc::EventQueue::add_timer(uint ident, uint32_t fflag, intptr_t data)
+void cc::EventQueue::add_timer(uint timerId, TimerConfig config, long data)
 {
-    change(ident,EVFILT_TIMER,EV_ADD,fflag,data);
+    change(timerId,EVFILT_TIMER,EV_ADD,config,data);
 }
 
 void cc::EventQueue::add_signal(uint signal, intptr_t data)
@@ -51,9 +51,9 @@ void cc::EventQueue::add_fd_writable(int fd)
     change(fd,EVFILT_WRITE,EV_ADD | EV_EOF,0,0);
 }
 
-void cc::EventQueue::add_fd_readable(int fd,uint32_t fflag,intptr_t data)
+void cc::EventQueue::add_fd_readable(int fd,ReadableConfig config,intptr_t data)
 {
-    change(fd,EVFILT_READ,EV_ADD | EV_ERROR,0,0);
+    change(fd,EVFILT_READ,EV_ADD | EV_ERROR,config,0);
 }
 
 int cc::EventQueue::wait(const struct timespec *timeout,struct kevent& event){
@@ -104,10 +104,10 @@ int cc::EventQueue::wait(int sec,struct kevent& event){
     return wait(&ts,event); 
 }
 
-void cc::EventQueue::add_process(pid_t pid,uint32_t fflag){
-    add(pid,EVFILT_PROC,fflag,0);
+void cc::EventQueue::add_process(pid_t pid,ProcessConfig config){
+    add(pid,EVFILT_PROC,config,0);
 }
 
-void cc::EventQueue::add_vnode(int fd,uint32_t fflag){
-    addClear(fd,EVFILT_VNODE,fflag,0);
+void cc::EventQueue::add_vnode(int fd,VnodeConfig config){
+    addClear(fd,EVFILT_VNODE,config,0);
 }

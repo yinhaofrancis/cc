@@ -16,7 +16,7 @@
 
 void child(int fd[2]){
     auto qq = cc::EventQueue();
-    qq.add_timer(1,NOTE_SECONDS,1);
+    qq.add_timer(1,cc::EventQueue::TimerConfig::SECONDS,1);
     int ct = 0;
     while (true)
     {
@@ -89,7 +89,7 @@ void testFork(){
     }else{
         std::cout << "pid: " << pid << std::endl;
         auto qq = cc::EventQueue();
-        qq.add_process(pid,NOTE_EXIT);
+        qq.add_process(pid,cc::EventQueue::EXIT);
         while (true)
         {
             struct kevent e;
@@ -125,12 +125,12 @@ void fk(){
         std::this_thread::sleep_for(std::chrono::seconds(5));
     }else{
         auto qq = cc::EventQueue();
-        qq.add_process(pid,NOTE_EXIT);
+        qq.add_process(pid,cc::EventQueue::EXIT);
         while (true)
         {
             struct kevent e;
             int w = qq.wait(1,e);
-            if (e.fflags & NOTE_EXIT){
+            if (e.fflags & cc::EventQueue::EXIT){
                 std::cout << "ok" <<std::endl;
                 return;
             }
@@ -143,7 +143,7 @@ void fk(){
 void testvnode(const char* path){
     auto qq = cc::EventQueue();
     auto fd = open(path,O_RDWR);
-    qq.add_vnode(fd,NOTE_WRITE);
+    qq.add_vnode(fd,cc::EventQueue::WRITE);
     while (true)
     {
         struct kevent e;
@@ -202,9 +202,9 @@ int main(int argc,char* argv[]){
 
 void timer(){
     auto qq = cc::EventQueue();
-    qq.add_timer(1,NOTE_SECONDS,1);
-    qq.add_timer(2,NOTE_SECONDS,2);
-    qq.add_timer(3,NOTE_SECONDS,3);
+    qq.add_timer(1,cc::EventQueue::TimerConfig::SECONDS,1);
+    qq.add_timer(2,cc::EventQueue::TimerConfig::SECONDS,2);
+    qq.add_timer(3,cc::EventQueue::TimerConfig::SECONDS,3);
 
     while (true)
     {
