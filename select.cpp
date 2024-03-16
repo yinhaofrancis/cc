@@ -85,7 +85,7 @@ void cc::Poll::add(int fd, Config config)
 
 int cc::Poll::wait(TimeInterval seconds)
 {
-    return poll(m_poll_fd.data(),m_poll_fd.size(),seconds * 1000);
+    return poll((pollfd*) m_poll_fd.data(),m_poll_fd.size(),seconds * 1000);
 }
 void cc::Poll::occur(std::vector<PollResult> &result){
     for (auto i = m_poll_fd.begin(); i < m_poll_fd.end(); i++)
@@ -95,8 +95,7 @@ void cc::Poll::occur(std::vector<PollResult> &result){
             pr.fd = i->fd;
             pr.config = (Config)i->revents;
             result.push_back(pr);
-            i->revents = 0
+            i->revents = 0;
         }
     }
-    
 }

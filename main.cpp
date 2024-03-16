@@ -162,7 +162,7 @@ int main(int argc,char* argv[]){
     int fd[2];
     pipe(fd);
     pid_t p = fork();
-    cc::Select select;
+    cc::Poll m_poll;
     if(p == 0){
         int i = 0;
         while (i < 100)
@@ -174,23 +174,20 @@ int main(int argc,char* argv[]){
         }
         close(fd[1]);
     }else{
-        select.add(fd[0],cc::Select::Config::SelectRead);
+        m_poll.add(fd[0],cc::Poll::Config::ConfigIN);
         while (true)
         {
-            int c = select.wait(5);
+            int c = m_poll.wait(5);
             if(c == 0){
                 std::cout << "timeout" << std::endl;
             }else{
-                std::vector<int> readfds,errorfd;
-                select.occur_read(readfds);
-                select.occur_error(errorfd);
-                if (errorfd.size() > 0){
-                    std::cout << errorfd.size() << std::endl;
-                }
+                std::vector<cc::Poll::PollResult> readfds;
+                m_poll.occur(readfds);
+       
                 char buff[64];
                 for (auto i = readfds.begin(); i < readfds.end(); i++){
                     memset(buff,0,sizeof(buff));
-                    read(*i,buff,64);
+                    read(i->fd,buff,64);
                     std::cout << buff << std::endl;
                 }
             }
@@ -199,7 +196,9 @@ int main(int argc,char* argv[]){
         }
         
     }
+    return 0;
 }
+
 
 void timer(){
     auto qq = cc::EventQueue();
