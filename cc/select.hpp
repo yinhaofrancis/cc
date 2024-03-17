@@ -4,7 +4,7 @@
 #include <sys/select.h>
 #include <sys/poll.h>
 #include <vector>
-
+#include <cmath>
 #include "time.hpp"
 
 namespace cc

@@ -8,6 +8,7 @@
 #include <arpa/inet.h>
 #include <string>
 #include <vector>
+#include <cstring>
 namespace cc
 {
 

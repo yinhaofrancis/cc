@@ -39,7 +39,7 @@ int cc::Select::wait(timeval &timeout)
 }
 int cc::Select::wait(TimeInterval timeout)
 {
-    int sec = floor(timeout);
+    int sec = std::floor(timeout);
     int nano = (timeout - sec) * 1000 * 1000 * 1000;
     timeval m{sec, nano};
     return cc::Select::wait(m);

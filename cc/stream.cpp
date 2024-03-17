@@ -61,7 +61,7 @@ int &cc::Stream::streamFD()
 int cc::EndPoint::resolute(std::string host, int socktype, std::vector<EndPoint> &endpoint)
 {
     struct addrinfo hints, *result, *cur;
-    memset(&hints, 0, sizeof(hints));
+    std::memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = socktype;
     hints.ai_protocol = IPPROTO_TCP;
@@ -90,23 +90,23 @@ cc::EndPoint::EndPoint(const sockaddr *address, socklen_t len)
 {
     m_address_len = len;
     this->m_address = (struct sockaddr *)malloc(len);
-    memset(m_address, 0, len);
-    memcpy(m_address, address, len);
+    std::memset(m_address, 0, len);
+    std::memcpy(m_address, address, len);
 }
 
 cc::EndPoint::EndPoint(const EndPoint &e)
 {
     this->m_address_len = e.m_address_len;
     this->m_address = (struct sockaddr *)malloc(e.m_address_len);
-    memset(m_address, 0, e.m_address_len);
-    memcpy(m_address, e.m_address, e.m_address_len);
+    std::memset(m_address, 0, e.m_address_len);
+    std::memcpy(m_address, e.m_address, e.m_address_len);
 }
 cc::EndPoint::EndPoint(const EndPoint &&e)
 {
     this->m_address_len = e.m_address_len;
     this->m_address = (struct sockaddr *)malloc(e.m_address_len);
-    memset(m_address, 0, e.m_address_len);
-    memcpy(m_address, e.m_address, e.m_address_len);
+    std::memset(m_address, 0, e.m_address_len);
+    std::memcpy(m_address, e.m_address, e.m_address_len);
 }
 cc::EndPoint::EndPoint(int af, std::string ipstr, uint16_t port)
 {
@@ -114,23 +114,23 @@ cc::EndPoint::EndPoint(int af, std::string ipstr, uint16_t port)
         in_addr ip;
         auto c = inet_pton(af,ipstr.c_str(),&ip);
         sockaddr_in enp;
-        memset(&enp,0,sizeof(enp));
+        std::memset(&enp,0,sizeof(enp));
         enp.sin_family = af;
         enp.sin_addr = ip;
         enp.sin_port = htons(port);
         m_address = (sockaddr *)malloc(sizeof(enp));
-        memcpy(m_address,&enp,sizeof(enp));
+        std::memcpy(m_address,&enp,sizeof(enp));
         m_address_len = sizeof(enp);
     }else{
         in6_addr ip;
         auto c = inet_pton(af,ipstr.c_str(),&ip);
         sockaddr_in6 enp;
-        memset(&enp,0,sizeof(enp));
+        std::memset(&enp,0,sizeof(enp));
         enp.sin6_family = af;
         enp.sin6_addr = ip;
         enp.sin6_port = htons(port);
         m_address = (sockaddr *)malloc(sizeof(enp));
-        memcpy(m_address,&enp,sizeof(enp));
+        std::memcpy(m_address,&enp,sizeof(enp));
         m_address_len = sizeof(enp);
     }
     
