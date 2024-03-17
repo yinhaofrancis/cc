@@ -23,9 +23,10 @@ int main()
 {
 
     std::vector<cc::EndPoint> out;
-    auto m = cc::EndPoint::resolute("m.baidu.com", SOCK_STREAM, out);
+    auto m = cc::EndPoint::resolute("baidu.com", SOCK_STREAM, out);
     for (auto i = out.begin() ; i < out.end(); i++)
     {
+        i->set_port(443);
         std::cout << i->info() << std::endl;
     }
     
