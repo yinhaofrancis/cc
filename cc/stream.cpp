@@ -108,6 +108,33 @@ cc::EndPoint::EndPoint(const EndPoint &&e)
     memset(m_address, 0, e.m_address_len);
     memcpy(m_address, e.m_address, e.m_address_len);
 }
+cc::EndPoint::EndPoint(int af, std::string ipstr, uint16_t port)
+{
+    if (af == AF_INET){
+        in_addr ip;
+        auto c = inet_pton(af,ipstr.c_str(),&ip);
+        sockaddr_in enp;
+        memset(&enp,0,sizeof(enp));
+        enp.sin_family = af;
+        enp.sin_addr = ip;
+        enp.sin_port = htons(port);
+        m_address = (sockaddr *)malloc(sizeof(enp));
+        memcpy(m_address,&enp,sizeof(enp));
+        m_address_len = sizeof(enp);
+    }else{
+        in6_addr ip;
+        auto c = inet_pton(af,ipstr.c_str(),&ip);
+        sockaddr_in6 enp;
+        memset(&enp,0,sizeof(enp));
+        enp.sin6_family = af;
+        enp.sin6_addr = ip;
+        enp.sin6_port = htons(port);
+        m_address = (sockaddr *)malloc(sizeof(enp));
+        memcpy(m_address,&enp,sizeof(enp));
+        m_address_len = sizeof(enp);
+    }
+    
+}
 cc::EndPoint::~EndPoint()
 {
     free(m_address);

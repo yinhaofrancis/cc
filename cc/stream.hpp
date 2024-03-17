@@ -16,6 +16,7 @@ namespace cc
         EndPoint(const struct sockaddr *,socklen_t);
         EndPoint(const EndPoint&);
         EndPoint(const EndPoint&&);
+        EndPoint(int af,std::string ip,uint16_t port);
         ~EndPoint();
         struct sockaddr* address() const;
         uint16_t port() const;
