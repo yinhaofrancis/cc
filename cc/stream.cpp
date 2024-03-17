@@ -58,9 +58,8 @@ int &cc::Stream::streamFD()
     return m_fd;
 }
 
-int cc::EndPoint::resolute(std::string host, int16_t port, int socktype, std::vector<EndPoint> &endpoint)
+int cc::EndPoint::resolute(std::string host, int socktype, std::vector<EndPoint> &endpoint)
 {
-
     struct addrinfo hints, *result, *cur;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
@@ -73,7 +72,7 @@ int cc::EndPoint::resolute(std::string host, int16_t port, int socktype, std::ve
         cur = result;
         do
         {
-            EndPoint ep(cur->ai_addr, cur->ai_addrlen, port);
+            EndPoint ep(cur->ai_addr, cur->ai_addrlen, cur->ai_family);
             endpoint.push_back(ep);
             cur = cur->ai_next;
         } while (cur != nullptr);
@@ -86,17 +85,39 @@ int cc::EndPoint::resolute(std::string host, int16_t port, int socktype, std::ve
     return ret;
 }
 
-cc::EndPoint::EndPoint(const sockaddr *address, socklen_t len, int16_t port)
+cc::EndPoint::EndPoint(const sockaddr *address, socklen_t len, sa_family_t family) : m_ai_family(family)
 {
+    memset(&m_address, 0, sizeof(sockaddr));
     memcpy(&m_address, address, len);
-    m_port = port;
+    m_addrlen = len;
+    m_ai_family = family;
 }
 
 const sockaddr &cc::EndPoint::address()
 {
     return m_address;
 }
-int16_t &cc::EndPoint::port()
+
+std::string cc::EndPoint::info()
 {
-    return m_port;
+    void* ip = nullptr;
+    char ipstr[128];
+    int16_t port;
+    if (m_ai_family == AF_INET)
+    {
+        sockaddr_in *ip4 = (sockaddr_in *)(&this->m_address);
+        port = ip4->sin_port;
+        ip = (void*)(&ip4->sin_addr);
+    }
+    else
+    {
+        sockaddr_in6 *ip6 = (sockaddr_in6 *)(&this->m_address);
+        port = ip6->sin6_port;
+        ip = (void*)(&ip6->sin6_addr);
+    }
+    inet_ntop(this->m_ai_family, ip, ipstr, 128);
+    return std::string("\naddress: ") +
+               std::string(ipstr) +
+               std::string("\nport: ") +
+               std::to_string(ntohs(port));
 }

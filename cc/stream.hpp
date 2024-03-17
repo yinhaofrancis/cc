@@ -31,14 +31,14 @@ namespace cc
 
     class EndPoint{
     public:
-        static int resolute(std::string host,int16_t port,int socktype,std::vector<EndPoint>& endpoint);
-        EndPoint(const struct sockaddr *, socklen_t,int16_t port);
+        static int resolute(std::string host,int socktype,std::vector<EndPoint>& endpoint);
+        EndPoint(const struct sockaddr *, socklen_t,sa_family_t family);
         const struct sockaddr& address();
-        int16_t& port();
+        std::string info();
     private:
         struct sockaddr m_address;
         socklen_t m_addrlen = 0;
-        int16_t m_port;
+        sa_family_t m_ai_family = 0;
     };
 
 
