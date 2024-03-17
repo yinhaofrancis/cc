@@ -4,6 +4,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_library(
     cc
+    stream.cpp
+    stream.hpp
     pipe.hpp
     pipe.cpp
     task.cpp

@@ -17,16 +17,12 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-int main()
-{
-    
-    // while (true)
-    // {
-    //     std::vector<struct kevent> m;
-    //     timer.wait(10,m);
-    //     std::cout << "a" <<std::endl;
-    // }
+#include "cc/stream.hpp"
 
+int main(){
+
+    std::vector<cc::EndPoint> out;
+    cc::EndPoint::resolute("www.qq.com",443,SOCK_STREAM,out);
     pid_t pid = fork();
 
     if(pid == 0){
