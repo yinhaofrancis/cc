@@ -1,14 +1,6 @@
-#include <stdio.h>
+
 #include <iostream>
-#include <signal.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <string>
-#include <sys/types.h>
-#include <sys/time.h>
-#include <sys/errno.h>
-#include <sys/socket.h>
-#include <signal.h>
+
 #include "cc/task.hpp"
 #include "cc/select.hpp"
 
@@ -17,44 +9,57 @@
 
 #include "cc/stream.hpp"
 
-int main()
-{
 
-    std::vector<cc::EndPoint> out;
-    cc::Poll poll;
-    auto m = cc::EndPoint::resolute("baidu.com", SOCK_STREAM, out);
-    cc::EndPoint cep(AF_INET,"192.168.1.1",8080);
-
-    std::cout << cep.info() << std::endl;
-
-    for (auto i = out.begin() ; i < out.end(); i++)
-    {
-        std::cout << i->info() << std::endl;
-    }
-    int fd = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-    fcntl(fd,O_NONBLOCK);
-    poll.add(fd,cc::Poll::ConfigOUT);
-    out[0].set_port(80);
-    cc::Stream s(fd);
-    int ret = s.Connect(out[0]);
+int server(){
+    cc::Select select;
+    cc::Stream server(0);
+    server.setNoBlock();
+    int ret = cc::Stream::CreateTcp(AF_INET,server);
+    select.add(server.streamFD(),cc::Select::Config::SelectRead);
+    cc::EndPoint localhost(AF_INET,8080);
+    server.Bind(localhost);
+    server.Listen(10);
+    std::cout << "listen.......\n" << localhost.info() << std::endl;
     while (true)
     {
-        auto c = poll.wait(10);
+        int c = select.wait(10);
+        
         if (c > 0){
-            std::vector<cc::Poll::PollResult> result;
-            poll.occur(result);
-            for (auto i = result.begin(); i < result.end(); i++){
-                cc::Stream stream = (i->fd);
-                std::string n = "abcd";
-                stream.Send(n.data(),n.size(),0);
+            std::cout << c << std::endl;
+            cc::EndPoint ep(AF_INET,0);
+            cc::Stream sr(0);
+            for (size_t i = 0; i < c; i++)
+            {
+                auto a = server.Accept(ep,sr);
+                std::cout << "accept:" << std::endl;
+                if(a <= 0){
+                    std::cout << strerror(errno) << std::endl;
+                }else{
+                    std::cout << ep.info() << std::endl;
+                }
             }
+        }else if (c < 0){
+            std::cout << strerror(errno) << std::endl;
+        }else{
+            std::cout << "no client" << std::endl;
         }
+        
+        
+        
     }
     
-    std::cout << ret << std::endl;
-    #ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
-        std::cout << "This is macOS." << std::endl;
-    #else
-        std::cout << "This is not macOS." << std::endl;
-    #endif
+}
+
+int main()
+{
+    
+    cc::Task::async([](){
+        server();
+    });
+    
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::microseconds(10));
+    }
+    
 }

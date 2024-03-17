@@ -38,11 +38,14 @@ int cc::Stream::Listen(int backlog)
 {
     return listen(m_fd, backlog);
 }
-cc::Stream cc::Stream::Accept(EndPoint& ep)
+int cc::Stream::Accept(EndPoint& ep,cc::Stream& stream)
 {
     auto fd = accept(m_fd, ep.address(), &ep.address_len());
-    Stream stream(fd);
-    return stream;
+    if (fd > 0){
+        stream.m_fd = fd;
+    }
+    
+    return fd;
 }
 int cc::Stream::Bind(const EndPoint& ep)
 {
@@ -51,6 +54,29 @@ int cc::Stream::Bind(const EndPoint& ep)
 int cc::Stream::Connect(const EndPoint& ep)
 {
     return connect(m_fd, ep.address(), ep.address_len());
+}
+
+void cc::Stream::setNoBlock()
+{
+    fcntl(m_fd,O_NONBLOCK);
+}
+
+int cc::Stream::CreateTcp(int af,cc::Stream& stream)
+{
+    int fd = socket(af,SOCK_STREAM,IPPROTO_TCP);
+    if(fd > 0){
+        stream.m_fd = fd;
+    }
+    return fd;
+}
+
+int cc::Stream::CreateUdp(int af,cc::Stream& stream)
+{
+    int fd = socket(af,SOCK_DGRAM,IPPROTO_UDP);
+    if(fd > 0){
+        stream.m_fd = fd;
+    }
+    return fd;
 }
 
 int &cc::Stream::streamFD()
@@ -135,6 +161,27 @@ cc::EndPoint::EndPoint(int af, std::string ipstr, uint16_t port)
     }
     
 }
+cc::EndPoint::EndPoint(int af, uint16_t port)
+{
+    if(af == AF_INET){
+        sockaddr_in ip;
+        ip.sin_addr.s_addr = INADDR_ANY;
+        ip.sin_family = af;
+        ip.sin_port = htons(port);
+        m_address_len = sizeof(ip);
+        m_address = (sockaddr *)malloc(m_address_len);
+        memcpy(m_address,&ip,m_address_len);
+    }else{
+        sockaddr_in6 ip;
+        ip.sin6_addr = in6addr_any;
+        ip.sin6_family = af;
+        ip.sin6_flowinfo = 0;
+        ip.sin6_port = htons(port);
+        m_address_len = sizeof(ip);
+        m_address = (sockaddr *)malloc(m_address_len);
+        memcpy(m_address,&ip,m_address_len);
+    }
+}
 cc::EndPoint::~EndPoint()
 {
     free(m_address);
@@ -187,7 +234,7 @@ std::string cc::EndPoint::info()
 {
     void *ip = nullptr;
     char ipstr[128];
-    int16_t port;
+    uint16_t port;
     if (m_address->sa_family == AF_INET)
     {
         sockaddr_in *ip4 = (sockaddr_in *)(this->m_address);
@@ -206,3 +253,4 @@ std::string cc::EndPoint::info()
            std::string("\nport: ") +
            std::to_string(ntohs(port));
 }
+

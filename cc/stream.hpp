@@ -15,10 +15,12 @@ namespace cc
     class EndPoint{
     public:
         static int resolute(std::string host,int socktype,std::vector<EndPoint>& endpoint);
+
         EndPoint(const struct sockaddr *,socklen_t);
         EndPoint(const EndPoint&);
         EndPoint(const EndPoint&&);
         EndPoint(int af,std::string ip,uint16_t port);
+        EndPoint(int af,uint16_t port);
         ~EndPoint();
         struct sockaddr* address() const;
         uint16_t port() const;
@@ -26,6 +28,7 @@ namespace cc
         socklen_t address_len() const;
         socklen_t& address_len();
         std::string info();
+        
         friend class Stream;
     private:
         struct sockaddr *m_address;
@@ -45,10 +48,12 @@ namespace cc
         size_t RecvFrom(char* buffer,size_t size,int flag,EndPoint&);
         int& streamFD();
         int Listen(int backlog);
-        Stream Accept(EndPoint&);
+        int Accept(EndPoint& ep,cc::Stream& stream);
         int Bind(const EndPoint&);
         int Connect(const EndPoint&);
-        
+        void setNoBlock();
+        static int CreateTcp(int af,Stream&);
+        static int CreateUdp(int af,Stream&);
     private:
         int m_fd;
     };
