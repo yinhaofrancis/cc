@@ -1,5 +1,6 @@
 #include "select.hpp"
 #include <algorithm>
+#include <vector>
 cc::Select::Select()
 {
     FD_ZERO(&m_readfd);
@@ -22,6 +23,14 @@ void cc::Select::add(int fd, cc::Select::Config config)
     }
     FD_SET(fd, &m_errorfd);
     m_fds.push_back(fd);
+}
+
+void cc::Select::remove(int fd)
+{
+    m_fds.erase(std::remove(m_fds.begin(),m_fds.end(),fd),m_fds.end());
+    FD_CLR(fd,&m_readfd);
+    FD_CLR(fd,&m_writefd);
+    FD_CLR(fd,&m_errorfd);
 }
 
 int cc::Select::wait(timeval &timeout)
@@ -81,6 +90,13 @@ void cc::Poll::add(int fd, Config config)
     p_fd.events = config;
     p_fd.revents = 0;
     m_poll_fd.push_back(p_fd);    
+}
+
+void cc::Poll::remove(int fd)
+{
+    m_poll_fd.erase(std::remove_if(m_poll_fd.begin(), m_poll_fd.end(), [fd](const pollfd &p) {
+        return p.fd == fd;
+    }), m_poll_fd.end());
 }
 
 int cc::Poll::wait(TimeInterval seconds)

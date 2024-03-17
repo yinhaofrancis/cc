@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/errno.h>
-
+#include <sys/socket.h>
 #include <signal.h>
 #include "cc/event.hpp"
 #include "cc/task.hpp"
@@ -23,14 +23,26 @@ int main()
 {
 
     std::vector<cc::EndPoint> out;
+    cc::Poll poll;
     auto m = cc::EndPoint::resolute("baidu.com", SOCK_STREAM, out);
     for (auto i = out.begin() ; i < out.end(); i++)
     {
-        i->set_port(443);
         std::cout << i->info() << std::endl;
     }
-    
-    std::cout << out.size() << std::endl;
+    int fd = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+    poll.add(fd,cc::Poll::ConfigOUT);
+
+    poll.remove(fd);
+    out[0].set_port(80);
+    cc::Stream s(fd);
+
+    int ret = s.Connect(out[0]);
+    std::cout << ret << std::endl;
+    #ifdef __ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__
+        std::cout << "This is macOS." << std::endl;
+    #else
+        std::cout << "This is not macOS." << std::endl;
+    #endif
 }
 
 int pp()

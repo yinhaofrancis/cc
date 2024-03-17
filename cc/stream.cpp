@@ -26,31 +26,31 @@ size_t cc::Stream::Recv(char *buffer, size_t size, int flag)
     return recv(m_fd, buffer, size, flag);
 }
 
-size_t cc::Stream::SendTo(char *buffer, size_t size, int flag, const struct sockaddr *address, socklen_t addrlen)
+size_t cc::Stream::SendTo(char *buffer, size_t size, int flag,const EndPoint& ep)
 {
-    return sendto(m_fd, buffer, size, flag, address, addrlen);
+    return sendto(m_fd, buffer, size, flag, ep.address(), ep.address_len());
 }
-size_t cc::Stream::RecvFrom(char *buffer, size_t size, int flag, struct sockaddr *address, socklen_t *addrlen)
+size_t cc::Stream::RecvFrom(char *buffer, size_t size, int flag,EndPoint& ep)
 {
-    return recvfrom(m_fd, buffer, size, flag, address, addrlen);
+    return  recvfrom(m_fd, buffer, size, flag, ep.address(), &ep.address_len());
 }
 int cc::Stream::Listen(int backlog)
 {
     return listen(m_fd, backlog);
 }
-cc::Stream cc::Stream::Accept(struct sockaddr *address, socklen_t *addrlen)
+cc::Stream cc::Stream::Accept(EndPoint& ep)
 {
-    auto fd = accept(m_fd, address, addrlen);
+    auto fd = accept(m_fd, ep.address(), &ep.address_len());
     Stream stream(fd);
     return stream;
 }
-int cc::Stream::Bind(const struct sockaddr *address, socklen_t addrlen)
+int cc::Stream::Bind(const EndPoint& ep)
 {
-    return bind(m_fd, address, addrlen);
+    return bind(m_fd, ep.address(), ep.address_len());
 }
-int cc::Stream::Connect(const struct sockaddr *address, socklen_t addrlen)
+int cc::Stream::Connect(const EndPoint& ep)
 {
-    return connect(m_fd, address, addrlen);
+    return connect(m_fd, ep.address(), ep.address_len());
 }
 
 int &cc::Stream::streamFD()
@@ -113,12 +113,12 @@ cc::EndPoint::~EndPoint()
     free(m_address);
 }
 
-const sockaddr *cc::EndPoint::address()
+sockaddr *cc::EndPoint::address() const
 {
     return m_address;
 }
 
-uint16_t cc::EndPoint::port()
+uint16_t cc::EndPoint::port() const
 {
     if (m_address->sa_family == AF_INET6)
     {
@@ -146,7 +146,12 @@ void cc::EndPoint::set_port(uint16_t port)
     }
 }
 
-socklen_t cc::EndPoint::address_len()
+socklen_t cc::EndPoint::address_len() const
+{
+    return m_address_len;
+}
+
+socklen_t &cc::EndPoint::address_len()
 {
     return m_address_len;
 }

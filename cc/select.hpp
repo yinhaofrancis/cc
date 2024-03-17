@@ -24,6 +24,7 @@ namespace cc
         Select();
         ~Select();
         void add(int fd, cc::Select::Config config);
+        void remove(int fd);
         int wait(timeval &time);
         int wait(TimeInterval seconds);
         void occur_write(std::vector<int> &fd);
@@ -60,6 +61,7 @@ namespace cc
         Poll();
         ~Poll();
         void    add(int fd,Config config);
+        void    remove(int fd);
         int     wait(TimeInterval seconds);
         void    occur(std::vector<PollResult> &result);
     private:    
