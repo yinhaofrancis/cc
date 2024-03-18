@@ -15,8 +15,8 @@ namespace cc
     public:
         enum Config
         {
-            SelectRead = 1,
-            SelectWrite = 1 << 1,
+            SelectRead = 0b01,
+            SelectWrite = 0b10,
             SelectAll = SelectRead | SelectWrite
         };
     public:
@@ -34,6 +34,7 @@ namespace cc
         int maxfd = 0;
         std::vector<int> m_fds;
         fd_set m_readfd, m_writefd, m_errorfd;
+        fd_set bm_readfd, bm_writefd, bm_errorfd;
     };
 
     class Poll

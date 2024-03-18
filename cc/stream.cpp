@@ -63,7 +63,7 @@ void cc::Stream::setNoBlock()
 
 int cc::Stream::CreateTcp(int af,cc::Stream& stream)
 {
-    int fd = socket(af,SOCK_STREAM,0);
+    int fd = socket(af,SOCK_STREAM,IPPROTO_TCP);
     if(fd > 0){
         stream.m_fd = fd;
     }
@@ -72,7 +72,7 @@ int cc::Stream::CreateTcp(int af,cc::Stream& stream)
 
 int cc::Stream::CreateUdp(int af,cc::Stream& stream)
 {
-    int fd = socket(af,SOCK_DGRAM,0);
+    int fd = socket(af,SOCK_DGRAM,IPPROTO_UDP);
     if(fd > 0){
         stream.m_fd = fd;
     }

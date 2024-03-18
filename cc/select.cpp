@@ -13,26 +13,35 @@ cc::Select::~Select() {}
 void cc::Select::add(int fd, cc::Select::Config config)
 {
     if(config & cc::Select::Config::SelectWrite){
-        FD_SET(fd,&m_writefd);
+        FD_SET(fd,&bm_writefd);
     }
     if(config & cc::Select::Config::SelectRead){
-        FD_SET(fd,&m_readfd);
+        FD_SET(fd,&bm_readfd);
     }
-    FD_SET(fd,&m_errorfd);
+    FD_SET(fd,&bm_errorfd);
+    
     m_fds.push_back(fd);
+    
+    auto maxfd_i = std::max_element(m_fds.begin(),m_fds.end());
+    if(maxfd_i != m_fds.end()){
+        maxfd = *maxfd_i;
+    }
 }
 
 void cc::Select::remove(int fd)
 {
-    FD_CLR(fd,&m_readfd);
-    FD_CLR(fd,&m_errorfd);
-    FD_CLR(fd,&m_writefd);
+    FD_CLR(fd,&bm_readfd);
+    FD_CLR(fd,&bm_errorfd);
+    FD_CLR(fd,&bm_writefd);
     m_fds.erase(std::remove(m_fds.begin(), m_fds.end(),fd), m_fds.end());
 }
 
 int cc::Select::wait(timeval &timeout)
 {
-    return select(maxfd, &m_readfd, &m_writefd, &m_errorfd, &timeout);
+    FD_COPY(&bm_writefd,&m_writefd);
+    FD_COPY(&bm_readfd,&m_readfd);
+    FD_COPY(&bm_errorfd,&m_errorfd);
+    return select(maxfd + 1, &m_readfd, &m_writefd, &m_errorfd, &timeout);
 }
 int cc::Select::wait(TimeInterval timeout)
 {
