@@ -31,10 +31,14 @@ namespace cc
         void occur_error(std::vector<int> &fd);
 
     private:
+        struct select_item{
+            int fd;
+            Config config;
+        };
+    private:
         int maxfd = 0;
-        std::vector<int> m_fds;
+        std::vector<select_item> m_fds;
         fd_set m_readfd, m_writefd, m_errorfd;
-        fd_set bm_readfd, bm_writefd, bm_errorfd;
     };
 
     class Poll

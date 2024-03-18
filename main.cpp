@@ -27,7 +27,7 @@ int server()
     while (true)
     {
 
-        int c = select.wait(1);
+        int c = select.wait(6);
         std::cout << c << std::endl;
         if (c > 0)
         {
