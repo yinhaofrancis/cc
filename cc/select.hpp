@@ -19,11 +19,6 @@ namespace cc
             SelectWrite = 1 << 1,
             SelectAll = SelectRead | SelectWrite
         };
-        struct FdDesc{
-            int fd;
-            cc::Select::Config config;
-        };
-
     public:
         Select();
         ~Select();
@@ -37,7 +32,7 @@ namespace cc
 
     private:
         int maxfd = 0;
-        std::vector<FdDesc> m_fds;
+        std::vector<int> m_fds;
         fd_set m_readfd, m_writefd, m_errorfd;
     };
 

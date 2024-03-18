@@ -12,32 +12,27 @@ cc::Select::~Select() {}
 
 void cc::Select::add(int fd, cc::Select::Config config)
 {
-    maxfd = std::max(maxfd, fd);
-    FdDesc fdd;
-    fdd.fd = fd;
-    fdd.config = config;
-    m_fds.push_back(fdd);
+    if(config & cc::Select::Config::SelectWrite){
+        FD_SET(fd,&m_writefd);
+    }
+    if(config & cc::Select::Config::SelectRead){
+        FD_SET(fd,&m_readfd);
+    }
+    FD_SET(fd,&m_errorfd);
+    m_fds.push_back(fd);
 }
 
 void cc::Select::remove(int fd)
 {
-    m_fds.erase(std::remove_if(m_fds.begin(), m_fds.end(), [fd](const FdDesc &p) {
-        return p.fd == fd;
-    }), m_fds.end());
+    FD_CLR(fd,&m_readfd);
+    FD_CLR(fd,&m_errorfd);
+    FD_CLR(fd,&m_writefd);
+    m_fds.erase(std::remove(m_fds.begin(), m_fds.end(),fd), m_fds.end());
 }
 
 int cc::Select::wait(timeval &timeout)
 {
-    for(auto i = m_fds.begin(); i < m_fds.end(); i++){
-        if(i->config & cc::Select::Config::SelectRead){
-            FD_SET(i->fd,&m_readfd);
-        }
-        if(i->config & cc::Select::Config::SelectWrite){
-            FD_SET(i->fd,&m_writefd);
-        }
-        FD_SET(i->fd,&m_errorfd);
-    }
-    return select(maxfd + 1, &m_readfd, &m_writefd, &m_errorfd, &timeout);
+    return select(maxfd, &m_readfd, &m_writefd, &m_errorfd, &timeout);
 }
 int cc::Select::wait(TimeInterval timeout)
 {
@@ -51,9 +46,9 @@ void cc::Select::occur_write(std::vector<int> &fd)
 {
     for (auto i = m_fds.begin(); i < m_fds.end(); i++)
     {
-        if (FD_ISSET(i->fd, &m_writefd))
+        if (FD_ISSET(*i, &m_writefd))
         {
-            fd.push_back(i->fd);
+            fd.push_back(*i);
         }
     }
 }
@@ -61,10 +56,10 @@ void cc::Select::occur_read(std::vector<int> &fd)
 {
     for (auto i = m_fds.begin(); i < m_fds.end(); i++)
     {
-        if (FD_ISSET(i->fd, &m_readfd))
+        if (FD_ISSET(*i, &m_readfd))
         {
-            fd.push_back(i->fd);
-        }
+            fd.push_back(*i);
+        } 
     }
 }
 void cc::Select::occur_error(std::vector<int> &fd)
@@ -72,9 +67,9 @@ void cc::Select::occur_error(std::vector<int> &fd)
     
     for (auto i = m_fds.begin(); i < m_fds.end(); i++)
     {
-        if (FD_ISSET(i->fd, &m_errorfd))
+        if (FD_ISSET(*i, &m_errorfd))
         {
-            fd.push_back(i->fd);
+            fd.push_back(*i);
         }
     }
 }
