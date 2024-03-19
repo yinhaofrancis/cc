@@ -16,6 +16,8 @@ add_library(
     select.hpp
     select.cpp
     time.hpp
+    tcp.cpp
+    tcp.hpp
 )
 else()
 add_library(
@@ -29,6 +31,8 @@ add_library(
     select.hpp
     select.cpp
     time.hpp
+    tcp.cpp
+    tcp.hpp
 )
 endif()
 

@@ -5,40 +5,40 @@
 
 cc::Stream::Stream(int fd) : m_fd(fd) {}
 
-void cc::Stream::Close()
+void cc::Stream::Close() const
 {
     close(m_fd);
 }
-size_t cc::Stream::Read(char *buffer, size_t size)
+size_t cc::Stream::Read(void *buffer, size_t size) const
 {
     return read(m_fd, buffer, size);
 }
-size_t cc::Stream::Write(char *buffer, size_t size)
+size_t cc::Stream::Write(void *buffer, size_t size) const 
 {
     return write(m_fd, buffer, size);
 }
-size_t cc::Stream::Send(char *buffer, size_t size, int flag)
+size_t cc::Stream::Send(const void *buffer, const size_t size, int flag) const
 {
     return send(m_fd, buffer, size, flag);
 }
-size_t cc::Stream::Recv(char *buffer, size_t size, int flag)
+size_t cc::Stream::Recv(void *buffer, size_t size, int flag) const
 {
     return recv(m_fd, buffer, size, flag);
 }
 
-size_t cc::Stream::SendTo(char *buffer, size_t size, int flag,const EndPoint& ep)
+size_t cc::Stream::SendTo(const void *buffer, const size_t size, int flag,const EndPoint& ep) const
 {
     return sendto(m_fd, buffer, size, flag, ep.address(), ep.address_len());
 }
-size_t cc::Stream::RecvFrom(char *buffer, size_t size, int flag,EndPoint& ep)
+size_t cc::Stream::RecvFrom(void *buffer, size_t size, int flag,EndPoint& ep) const
 {
     return  recvfrom(m_fd, buffer, size, flag, ep.address(), &ep.address_len());
 }
-int cc::Stream::Listen(int backlog)
+int cc::Stream::Listen(int backlog) const 
 {
     return listen(m_fd, backlog);
 }
-int cc::Stream::Accept(EndPoint& ep,cc::Stream& stream)
+int cc::Stream::Accept(EndPoint& ep,cc::Stream& stream) const 
 {
     auto fd = accept(m_fd, ep.address(), &ep.address_len());
     if (fd > 0){
@@ -47,21 +47,21 @@ int cc::Stream::Accept(EndPoint& ep,cc::Stream& stream)
     
     return fd;
 }
-int cc::Stream::Bind(const EndPoint& ep)
+int cc::Stream::Bind(const EndPoint& ep) const 
 {
     return bind(m_fd, ep.address(), ep.address_len());
 }
-int cc::Stream::Connect(const EndPoint& ep)
+int cc::Stream::Connect(const EndPoint& ep)const 
 {
     return connect(m_fd, ep.address(), ep.address_len());
 }
 
-void cc::Stream::setNoBlock()
+void cc::Stream::setNoBlock() const
 {
     fcntl(m_fd,O_NONBLOCK);
 }
 
-int cc::Stream::CreateTcp(int af,cc::Stream& stream)
+int cc::Stream::CreateTcp(AddressFamily af,cc::Stream& stream)
 {
     int fd = socket(af,SOCK_STREAM,IPPROTO_TCP);
     if(fd > 0){
@@ -70,7 +70,7 @@ int cc::Stream::CreateTcp(int af,cc::Stream& stream)
     return fd;
 }
 
-int cc::Stream::CreateUdp(int af,cc::Stream& stream)
+int cc::Stream::CreateUdp(AddressFamily af,cc::Stream& stream)
 {
     int fd = socket(af,SOCK_DGRAM,IPPROTO_UDP);
     if(fd > 0){
@@ -134,7 +134,17 @@ cc::EndPoint::EndPoint(const EndPoint &&e)
     std::memset(m_address, 0, e.m_address_len);
     std::memcpy(m_address, e.m_address, e.m_address_len);
 }
-cc::EndPoint::EndPoint(int af, std::string ipstr, uint16_t port)
+void cc::EndPoint::operator=(EndPoint & ep)
+{
+    this->m_address = ep.m_address;
+    this->m_address_len = ep.m_address_len;
+}
+void cc::EndPoint::operator=(EndPoint && ep)
+{
+    this->m_address = ep.m_address;
+    this->m_address_len = ep.m_address_len;
+}
+cc::EndPoint::EndPoint(AddressFamily af, std::string ipstr, uint16_t port)
 {
     if (af == AF_INET){
         in_addr ip;
@@ -161,7 +171,7 @@ cc::EndPoint::EndPoint(int af, std::string ipstr, uint16_t port)
     }
     
 }
-cc::EndPoint::EndPoint(int af, uint16_t port)
+cc::EndPoint::EndPoint(AddressFamily af, uint16_t port)
 {
     if(af == AF_INET){
         sockaddr_in ip;
@@ -230,11 +240,21 @@ socklen_t &cc::EndPoint::address_len()
     return m_address_len;
 }
 
-std::string cc::EndPoint::info()
+void cc::EndPoint::info(std::string &ipInfo) const
+{
+    std::string ip;
+    uint16_t port;
+    cc::EndPoint::ipAddressAndPort(ip,port);
+    ipInfo = std::string("\naddress: ") +
+           ip +
+           std::string("\nport: ") +
+           std::to_string(port);
+}
+
+void cc::EndPoint::ipAddressAndPort(std::string &ipAddress, uint16_t &port) const
 {
     void *ip = nullptr;
     char ipstr[128];
-    uint16_t port;
     if (m_address->sa_family == AF_INET)
     {
         sockaddr_in *ip4 = (sockaddr_in *)(this->m_address);
@@ -248,9 +268,6 @@ std::string cc::EndPoint::info()
         ip = (void *)(&ip6->sin6_addr);
     }
     inet_ntop(m_address->sa_family, ip, ipstr, 128);
-    return std::string("\naddress: ") +
-           std::string(ipstr) +
-           std::string("\nport: ") +
-           std::to_string(ntohs(port));
+    ipAddress = std::string(ipstr);
+    port = ntohs(port);
 }
-

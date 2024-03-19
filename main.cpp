@@ -9,42 +9,28 @@
 
 #include "cc/stream.hpp"
 #include "main.h"
+#include "cc/tcp.hpp"
 
-int server()
-{
-    cc::Select select;
-    cc::Stream server(0);
-    int ret = cc::Stream::CreateTcp(AF_INET, server);
-    // server.setNoBlock();
-    select.add(server.streamFD(), cc::Select::Config::SelectRead);
-
-    cc::EndPoint localhost(AF_INET, 8080);
-    ret = server.Bind(localhost);
-    ret = server.Listen(10);
-
-    std::cout << "listen.......\n"
-              << localhost.info() << std::endl;
-    while (true)
-    {
-
-        int c = select.wait(6);
-        std::cout << c << std::endl;
-        if (c > 0)
-        {
-            cc::EndPoint ep(AF_INET, 0);
-            cc::Stream sr(0);
-            auto a = server.Accept(ep, sr);
-            std::cout << "accept:" << std::endl;
-            if (a <= 0)
-            {
-                std::cout << strerror(errno) << std::endl;
-            }
-            else
-            {
-                std::cout << ep.info() << std::endl;
-            }
-        }
+class tcpServerImp:virtual public cc::TcpServerDelegate{
+    virtual void acceptClient(const cc::TcpServer& server,cc::Stream& stream,cc::EndPoint& point){
+        
+        std::string str;
+        point.info(str);
+        std::cout << str <<std::endl;
     }
+};
+
+cc::TcpServer *g_server;
+
+cc::TcpServerDelegate* delegate;
+
+
+void server()
+{
+    delegate = new tcpServerImp();
+    g_server = new cc::TcpServer(cc::Ipv4,delegate);
+    g_server->Listen(8080);
+    // g_server.listen(2,8080);
 }
 int main()
 {

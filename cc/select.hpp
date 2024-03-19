@@ -24,11 +24,11 @@ namespace cc
         ~Select();
         void add(int fd, cc::Select::Config config);
         void remove(int fd);
-        int wait(timeval &time);
-        int wait(TimeInterval seconds);
-        void occur_write(std::vector<int> &fd);
-        void occur_read(std::vector<int> &fd);
-        void occur_error(std::vector<int> &fd);
+        int wait(timeval &time) const;
+        int wait(TimeInterval seconds) const;
+        void occur_write(std::vector<int> &fd) const;
+        void occur_read(std::vector<int> &fd) const;
+        void occur_error(std::vector<int> &fd) const;
 
     private:
         struct select_item{
@@ -36,9 +36,9 @@ namespace cc
             Config config;
         };
     private:
-        int maxfd = 0;
+
         std::vector<select_item> m_fds;
-        fd_set m_readfd, m_writefd, m_errorfd;
+        fd_set *m_readfd, *m_writefd, *m_errorfd;
     };
 
     class Poll
@@ -64,12 +64,14 @@ namespace cc
     public:
         Poll();
         ~Poll();
+        Poll(Poll&) = delete;
+        Poll(Poll&&) = delete;
         void    add(int fd,Config config);
         void    remove(int fd);
-        int     wait(TimeInterval seconds);
-        void    occur(std::vector<PollResult> &result);
+        int     wait(TimeInterval seconds) const;
+        void    occur(std::vector<PollResult> &result) const;
     private:    
-        std::vector<pollfd> m_poll_fd;
+        std::vector<pollfd> *m_poll_fd;
         
     };
 

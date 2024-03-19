@@ -11,6 +11,9 @@
 #include <cstring>
 namespace cc
 {
+    enum AddressFamily{
+        Ipv4 = AF_INET ,Ipv6 = AF_INET6
+    };
 
     class EndPoint{
     public:
@@ -19,15 +22,18 @@ namespace cc
         EndPoint(const struct sockaddr *,socklen_t);
         EndPoint(const EndPoint&);
         EndPoint(const EndPoint&&);
-        EndPoint(int af,std::string ip,uint16_t port);
-        EndPoint(int af,uint16_t port);
+        void operator = (EndPoint&);
+        void operator = (EndPoint&&);
+        EndPoint(AddressFamily af,std::string ip,uint16_t port);
+        EndPoint(AddressFamily af,uint16_t port);
         ~EndPoint();
         struct sockaddr* address() const;
         uint16_t port() const;
         void set_port(uint16_t port);
         socklen_t address_len() const;
         socklen_t& address_len();
-        std::string info();
+        void info(std::string &ipInfo) const;
+        void ipAddressAndPort(std::string& ip,uint16_t& port) const;
         
         friend class Stream;
     private:
@@ -39,21 +45,21 @@ namespace cc
     {
     public:
         Stream(int fd);
-        void Close();
-        size_t Read(char* buffer,size_t size);
-        size_t Write(char* buffer,size_t size);
-        size_t Send(char* buffer,size_t size,int flag);
-        size_t Recv(char* buffer,size_t size,int flag);
-        size_t SendTo(char* buffer,size_t size,int flag,const EndPoint&);
-        size_t RecvFrom(char* buffer,size_t size,int flag,EndPoint&);
+        void Close() const;
+        size_t Read(void* buffer,size_t size) const;
+        size_t Write(void* buffer,size_t size) const;
+        size_t Send(const void* buffer,const size_t size,int flag) const;
+        size_t Recv(void* buffer,size_t size,int flag) const;
+        size_t SendTo(const void* buffer, const size_t size,int flag,const EndPoint&) const;
+        size_t RecvFrom(void* buffer,size_t size,int flag,EndPoint&) const;
         int& streamFD();
-        int Listen(int backlog);
-        int Accept(EndPoint& ep,cc::Stream& stream);
-        int Bind(const EndPoint&);
-        int Connect(const EndPoint&);
-        void setNoBlock();
-        static int CreateTcp(int af,Stream&);
-        static int CreateUdp(int af,Stream&);
+        int Listen(int backlog) const;
+        int Accept(EndPoint& ep,cc::Stream& stream) const;
+        int Bind(const EndPoint&) const;
+        int Connect(const EndPoint&) const;
+        void setNoBlock() const;
+        static int CreateTcp(AddressFamily af,Stream&);
+        static int CreateUdp(AddressFamily af,Stream&);
     private:
         int m_fd;
     };
