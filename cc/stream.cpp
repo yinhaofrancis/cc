@@ -5,32 +5,34 @@
 
 cc::Stream::Stream(int fd) : m_fd(fd) {}
 
+cc::Stream::Stream() : m_fd(0) {}
+
 void cc::Stream::Close() const
 {
     close(m_fd);
 }
-size_t cc::Stream::Read(void *buffer, size_t size) const
+ssize_t cc::Stream::Read(void *buffer, size_t size) const
 {
     return read(m_fd, buffer, size);
 }
-size_t cc::Stream::Write(void *buffer, size_t size) const 
+ssize_t cc::Stream::Write(void *buffer, size_t size) const 
 {
     return write(m_fd, buffer, size);
 }
-size_t cc::Stream::Send(const void *buffer, const size_t size, int flag) const
+ssize_t cc::Stream::Send(const void *buffer, const size_t size, int flag) const
 {
     return send(m_fd, buffer, size, flag);
 }
-size_t cc::Stream::Recv(void *buffer, size_t size, int flag) const
+ssize_t cc::Stream::Recv(void *buffer, size_t size, int flag) const
 {
     return recv(m_fd, buffer, size, flag);
 }
 
-size_t cc::Stream::SendTo(const void *buffer, const size_t size, int flag,const EndPoint& ep) const
+ssize_t cc::Stream::SendTo(const void *buffer, const size_t size, int flag,const EndPoint& ep) const
 {
     return sendto(m_fd, buffer, size, flag, ep.address(), ep.address_len());
 }
-size_t cc::Stream::RecvFrom(void *buffer, size_t size, int flag,EndPoint& ep) const
+ssize_t cc::Stream::RecvFrom(void *buffer, size_t size, int flag,EndPoint& ep) const
 {
     return  recvfrom(m_fd, buffer, size, flag, ep.address(), &ep.address_len());
 }
@@ -134,15 +136,19 @@ cc::EndPoint::EndPoint(const EndPoint &&e)
     std::memset(m_address, 0, e.m_address_len);
     std::memcpy(m_address, e.m_address, e.m_address_len);
 }
-void cc::EndPoint::operator=(EndPoint & ep)
+void cc::EndPoint::operator=(EndPoint & e)
 {
-    this->m_address = ep.m_address;
-    this->m_address_len = ep.m_address_len;
+    this->m_address_len = e.m_address_len;
+    this->m_address = (struct sockaddr *)malloc(e.m_address_len);
+    std::memset(m_address, 0, e.m_address_len);
+    std::memcpy(m_address, e.m_address, e.m_address_len);
 }
-void cc::EndPoint::operator=(EndPoint && ep)
+void cc::EndPoint::operator=(EndPoint && e)
 {
-    this->m_address = ep.m_address;
-    this->m_address_len = ep.m_address_len;
+    this->m_address_len = e.m_address_len;
+    this->m_address = (struct sockaddr *)malloc(e.m_address_len);
+    std::memset(m_address, 0, e.m_address_len);
+    std::memcpy(m_address, e.m_address, e.m_address_len);
 }
 cc::EndPoint::EndPoint(AddressFamily af, std::string ipstr, uint16_t port)
 {

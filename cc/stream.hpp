@@ -45,13 +45,14 @@ namespace cc
     {
     public:
         Stream(int fd);
+        Stream();
         void Close() const;
-        size_t Read(void* buffer,size_t size) const;
-        size_t Write(void* buffer,size_t size) const;
-        size_t Send(const void* buffer,const size_t size,int flag) const;
-        size_t Recv(void* buffer,size_t size,int flag) const;
-        size_t SendTo(const void* buffer, const size_t size,int flag,const EndPoint&) const;
-        size_t RecvFrom(void* buffer,size_t size,int flag,EndPoint&) const;
+        ssize_t Read(void* buffer,size_t size) const;
+        ssize_t Write(void* buffer,size_t size) const;
+        ssize_t Send(const void* buffer,const size_t size,int flag) const;
+        ssize_t Recv(void* buffer,size_t size,int flag) const;
+        ssize_t SendTo(const void* buffer, const size_t size,int flag,const EndPoint&) const;
+        ssize_t RecvFrom(void* buffer,size_t size,int flag,EndPoint&) const;
         int& streamFD();
         int Listen(int backlog) const;
         int Accept(EndPoint& ep,cc::Stream& stream) const;

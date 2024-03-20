@@ -11,38 +11,37 @@
 #include "main.h"
 #include "cc/tcp.hpp"
 
-class tcpServerImp:virtual public cc::TcpServerDelegate{
-    virtual void acceptClient(const cc::TcpServer& server,cc::Stream& stream,cc::EndPoint& point){
+class TCPDelegate:virtual public cc::TcpServer::Delegate{
+    virtual void recieve(const cc::TcpServer::Client& client,void* buffer, size_t size){
+        std::string str((char* )buffer,size);
+        std::string info;
+        client.ep.info(info);
+        std::cout << info << std::endl;
+        std::cout << str << std::endl;
+    }
+    virtual ~TCPDelegate(){
         
-        std::string str;
-        point.info(str);
-        std::cout << str <<std::endl;
     }
 };
 
-cc::TcpServer *g_server;
-
-cc::TcpServerDelegate* delegate;
-
+cc::TcpServer* g_server = nullptr;
 
 void server()
 {
-    delegate = new tcpServerImp();
-    g_server = new cc::TcpServer(cc::Ipv4,delegate);
-    g_server->Listen(8080);
-    // g_server.listen(2,8080);
+    g_server = new cc::TcpServer(cc::AddressFamily::Ipv4);
+
+    g_server->Listen(8080,new TCPDelegate());
 }
 int main()
 {
 
-    cc::Task::async([]()
-                    { server(); });
-    // testPipe();
-
+    server();
     while (true)
     {
-        std::this_thread::sleep_for(std::chrono::microseconds(10));
+        std::this_thread::sleep_for(std::chrono::seconds(20));
     }
+    
+
     return 0;
 }
 void testPipe()

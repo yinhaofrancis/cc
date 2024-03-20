@@ -10,59 +10,49 @@
 #include <string>
 #include <vector>
 #include <cstring>
+#include <mutex>
+#include <unordered_map>
 
 #include "stream.hpp"
-
-
+#include "select.hpp"
 namespace cc
 {
-    class TcpServer;
-    class TcpConnectedClient;
 
-    class TcpServerDelegate
-    {
-    public:
-        virtual void acceptClient(const TcpServer& server,Stream& stream,EndPoint& point) = 0;
-    };
+
     class TcpServer
     {
     public:
-        TcpServer(AddressFamily af, TcpServerDelegate* delegate);
-        ~TcpServer();
-        void Listen(uint16_t port);
-    private:
-        TcpServerDelegate* m_delegate = nullptr;
-        Stream* m_stream;
-        AddressFamily m_af;
-        bool m_is_running;
-    };
-
-    class TcpConnectedClientDelegate
-    {
-    public:
-        virtual bool recieveClient(const TcpConnectedClient& client,const void* buffer,size_t size) = 0;
-    };
-    class TcpConnectedClient{
-    public:
-        TcpConnectedClient(Stream& stream,EndPoint& point);
-        ~TcpConnectedClient();
-        TcpConnectedClient(TcpConnectedClient&) = delete;
-        TcpConnectedClient(TcpConnectedClient&&) = delete;
-        void SendBuffer(const void* buffer,const size_t size) const;
-        void SendString(const std::string buffer) const;
-        void SetDelegate(TcpConnectedClientDelegate* delegate);
-        void Close();
-    private:
-        struct PendingBuffer{
-            const void* buffer;
-            size_t size;
+        struct Client
+        {
+            Stream stream;
+            EndPoint ep = EndPoint(0,0);
+            bool isInvalid = false;
         };
-        Stream *m_stream;
-        EndPoint m_endpoint;
-        bool m_is_running;
-        TcpConnectedClientDelegate* m_delegate;
-        std::vector<PendingBuffer> *m_pendding_buffer;
+        struct Context{
+            Select select;
+            Select clientSelect;
+            AddressFamily af;
+            Stream stream;
+            bool m_runing = false;
+            std::unordered_map<int,Client> clients;
+            std::mutex lock;
+        };
+        class Delegate{
+        public:
+            virtual void recieve(const TcpServer::Client&,void* buffer, size_t size) = 0;
+            virtual ~Delegate() = 0;
+        };
+    public:
 
+        TcpServer(AddressFamily af);
+        ~TcpServer();
+        void Listen(uint16_t port,Delegate *delegate);
+        bool isRunning();
+    private:
+        Context* m_ctx = nullptr;
+        AddressFamily m_af;
+        void RecieveDataProcess(cc::TcpServer::Context *c_ctx, void *buffer, Delegate *delegate);
+        void ErrorStreamProcess(cc::TcpServer::Context *c_ctx);
     };
 } // namespace cc
 
