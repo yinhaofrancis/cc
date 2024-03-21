@@ -8,7 +8,7 @@
 #include <thread>
 #include <atomic>
 #include <vector>
-
+#include <memory>
 #include "time.hpp"
 
 namespace cc
@@ -55,49 +55,49 @@ namespace cc
         };
 
     public:
-        void change(struct kevent &e);
+        void change(struct kevent &e) const;
 
-        void change(uintptr_t ident, int16_t filter, uint16_t flag, uint32_t fflag, intptr_t data);
+        void change(uintptr_t ident, int16_t filter, uint16_t flag, uint32_t fflag, intptr_t data) const;
 
-        void add(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data);
+        void add(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data) const;
 
-        void addOnce(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data);
+        void addOnce(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data) const;
 
-        void addClear(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data);
+        void addClear(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data) const;
 
-        void enable(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data);
+        void enable(uintptr_t ident, int16_t filter, uint32_t fflag, intptr_t data) const;
 
-        void remove(uintptr_t ident, int16_t filter);
+        void remove(uintptr_t ident, int16_t filter) const;
 
-        void disable(uintptr_t ident, int16_t filter);
+        void disable(uintptr_t ident, int16_t filter) const;
 
-        int wait(const struct timespec *timeout, std::vector<struct kevent> &);
+        int wait(const struct timespec *timeout, std::vector<struct kevent> &) const;
 
-        int wait(const struct timespec *timeout, struct kevent &event);
+        int wait(const struct timespec *timeout, struct kevent &event) const;
 
-        int wait(TimeInterval timeout, std::vector<struct kevent> &);
+        int wait(TimeInterval timeout, std::vector<struct kevent> &) const;
 
-        int wait(TimeInterval timeout, struct kevent &event);
+        int wait(TimeInterval timeout, struct kevent &event) const;
 
-        int wait(int sec, std::vector<struct kevent> &);
+        int wait(int sec, std::vector<struct kevent> &) const;
 
-        int wait(int sec, struct kevent &event);
+        int wait(int sec, struct kevent &event) const;
 
-        void add_timer(uint timerId, TimerConfig config, long data);
+        void add_timer(uint timerId, TimerConfig config, long data) const;
 
-        void add_signal(uint signal, intptr_t data);
+        void add_signal(uint signal, intptr_t data) const;
 
-        void add_fd_readable(int fd, ReadableConfig fflag, intptr_t data);
+        void add_fd_readable(int fd, ReadableConfig fflag, intptr_t data) const;
 
-        void add_fd_writable(int fd);
+        void add_fd_writable(int fd) const;
 
-        void add_process(pid_t pid, ProcessConfig fflag);
+        void add_process(pid_t pid, ProcessConfig fflag) const;
 
-        void add_vnode(int fd, VnodeConfig config);
+        void add_vnode(int fd, VnodeConfig config) const;
 
     private:
         int m_kq = kqueue();
-        std::array<struct kevent, max_event_count> m_event;
+        std::unique_ptr<std::array<struct kevent, max_event_count>> m_event;
     };
 } // namespace cc
 #endif

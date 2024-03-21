@@ -35,6 +35,25 @@ void server()
 int main()
 {
 
+    std::shared_ptr<std::array<int,100>> k(new std::array<int,100>());
+
+    std::shared_ptr<std::array<int,100>> *k1 = new std::shared_ptr<std::array<int,100>>(k);
+    std::shared_ptr<std::array<int,100>> *k2 = new std::shared_ptr<std::array<int,100>>(k);
+    for (size_t i = 0; i < 100; i++)
+    {
+        (*k)[i] = i;
+    }
+    delete k1;
+    delete k2;
+    for (size_t i = 50; i < 100; i++)
+    {
+        int c = (*k)[i]; 
+        int a = (**k1)[i];
+        std::cout << a << std::endl;
+    } 
+    
+
+
     server();
     while (true)
     {
