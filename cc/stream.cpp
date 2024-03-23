@@ -60,7 +60,10 @@ int cc::Stream::Connect(const EndPoint& ep)const
 
 void cc::Stream::setNoBlock() const
 {
-    fcntl(m_fd,O_NONBLOCK);
+    int v = 0;
+    fcntl(m_fd,F_GETFL,&v);
+    v = v | O_NONBLOCK;
+    fcntl(m_fd,F_SETFL,v);
 }
 
 int cc::Stream::CreateTcp(AddressFamily af,cc::Stream& stream)
@@ -81,7 +84,7 @@ int cc::Stream::CreateUdp(AddressFamily af,cc::Stream& stream)
     return fd;
 }
 
-int &cc::Stream::streamFD()
+int cc::Stream::streamFD() const
 {
     return m_fd;
 }
@@ -283,10 +286,9 @@ cc::Block::Block(const void *buffer, const size_t size):m_size(size),m_buffer(ma
     memcpy((void*)m_buffer,buffer,size);
 }
 
-cc::Block::~Block()
-{
-    release();
-}
+cc::Block::Block(const size_t size):m_size(size),m_buffer(malloc(size)) { }
+
+cc::Block::~Block(){}
 
 void cc::Block::dealloc()
 {

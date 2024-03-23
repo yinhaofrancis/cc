@@ -59,15 +59,26 @@ void cc::WorkFlow::sync(std::function<void()> func)
     m->lock();
 }
 
-cc::Task::Task(std::function<void()> func):m_func(func){}
+cc::Task::Task(std::function<void()> func):m_func(func){
+    this->m_thread = new std::thread(this->m_func);
+}
+
+cc::Task::~Task()
+{
+   if (m_thread->joinable()){
+        m_thread->join();
+   }
+    delete m_thread;
+}
 
 void cc::Task::detach()
 {
-    std::thread(m_func).detach();
+    m_thread->detach();
 }
+
 void cc::Task::join()
 {
-    std::thread(m_func).join();
+    m_thread->join();
 }
 
 void cc::Task::async(std::function<void()> func){

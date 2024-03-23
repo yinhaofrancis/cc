@@ -26,12 +26,14 @@ namespace cc
     {
     public:
         Task(std::function<void()> func);
+        ~Task();
         void detach();
         void join();
         static void async(std::function<void()> func);
         static void sync(std::function<void()> func);
     private:
         std::function<void()> m_func;
+        std::thread *m_thread;
     };
 } // namespace cc
 

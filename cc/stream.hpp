@@ -18,16 +18,17 @@ namespace cc
         Ipv4 = AF_INET ,Ipv6 = AF_INET6
     };
 
-    class Block:public Object{
+    class Block{
     public:
         Block(const void* buffer,const size_t size);
+        Block(const size_t size);
         ~Block();
-        virtual void    dealloc();
+        void    dealloc();
         const void*     buffer();
         const size_t    size();        
     private:
-       const void* m_buffer;
-       const size_t m_size;
+       void* m_buffer;
+       size_t m_size;
     };
 
     class EndPoint{
@@ -68,7 +69,7 @@ namespace cc
         ssize_t Recv(void* buffer,size_t size,int flag) const;
         ssize_t SendTo(const void* buffer, const size_t size,int flag,const EndPoint&) const;
         ssize_t RecvFrom(void* buffer,size_t size,int flag,EndPoint&) const;
-        int& streamFD();
+        int streamFD() const;
         int Listen(int backlog) const;
         int Accept(EndPoint& ep,cc::Stream& stream) const;
         int Bind(const EndPoint&) const;

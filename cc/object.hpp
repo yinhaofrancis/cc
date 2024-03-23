@@ -13,8 +13,7 @@ namespace cc
        void retain();
        Ref(uint64_t ref);
     private:
-        uint64_t value;
-        std::mutex m_mutex;
+        std::atomic_uint64_t value;
     };
 
     class Object{
@@ -31,7 +30,7 @@ namespace cc
         void retain();
         void release();
     private:
-        Ref* m_ref_count;
+        Ref** m_ref_count = nullptr;
     };
 }
 

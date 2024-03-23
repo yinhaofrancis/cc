@@ -15,15 +15,15 @@ namespace cc
     public:
         enum Config
         {
-            SelectRead = 0b01,
-            SelectWrite = 0b10,
-            SelectAll = SelectRead | SelectWrite
+            SelectRead = 1,
+            SelectWrite = 2
         };
     public:
         Select();
         ~Select();
         void add(int fd, cc::Select::Config config);
         void remove(int fd);
+        void remove(int fd,cc::Select::Config config);
         int wait(timeval &time) const;
         int wait(TimeInterval seconds) const;
         void occur_write(std::vector<int> &fd) const;
@@ -68,6 +68,7 @@ namespace cc
         Poll(Poll&&) = delete;
         void    add(int fd,Config config);
         void    remove(int fd);
+        void    remove(int fd,Config config);
         int     wait(TimeInterval seconds) const;
         void    occur(std::vector<PollResult> &result) const;
     private:    

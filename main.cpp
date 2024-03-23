@@ -32,18 +32,12 @@ void mkk(cc::Object &&m){
 }
 int main()
 {
-    cc::Object *m = new nn();
-    std::cout<<m->refCount()<<std::endl; 
-    {
-        cc::Object n(*m);
-        std::cout<<m->refCount()<<std::endl; 
-        cc::Object a = n;
-        std::cout<<m->refCount()<<std::endl;  
-        mkk(mk(a));
-    }
-    std::cout<<m->refCount()<<std::endl; 
-    delete m;
     
+    cc::TcpServer ts(cc::Ipv4); 
+    ts.Listen(8080);
+
+    std::this_thread::sleep_for(std::chrono::seconds(300));
+
     return 0;
 }
 
