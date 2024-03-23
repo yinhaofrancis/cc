@@ -9,10 +9,25 @@
 #include <string>
 #include <vector>
 #include <cstring>
+
+#include "object.hpp" 
+
 namespace cc
 {
     enum AddressFamily{
         Ipv4 = AF_INET ,Ipv6 = AF_INET6
+    };
+
+    class Block:public Object{
+    public:
+        Block(const void* buffer,const size_t size);
+        ~Block();
+        virtual void    dealloc();
+        const void*     buffer();
+        const size_t    size();        
+    private:
+       const void* m_buffer;
+       const size_t m_size;
     };
 
     class EndPoint{

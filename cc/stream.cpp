@@ -277,3 +277,28 @@ void cc::EndPoint::ipAddressAndPort(std::string &ipAddress, uint16_t &port) cons
     ipAddress = std::string(ipstr);
     port = ntohs(port);
 }
+
+cc::Block::Block(const void *buffer, const size_t size):m_size(size),m_buffer(malloc(size))
+{
+    memcpy((void*)m_buffer,buffer,size);
+}
+
+cc::Block::~Block()
+{
+    release();
+}
+
+void cc::Block::dealloc()
+{
+    free((void*)m_buffer);
+}
+
+const void *cc::Block::buffer()
+{
+    return m_buffer;
+}
+
+const size_t cc::Block::size()
+{
+    return m_size;
+}

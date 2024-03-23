@@ -10,59 +10,43 @@
 #include "cc/stream.hpp"
 #include "main.h"
 #include "cc/tcp.hpp"
+#include "cc/object.hpp"
 
-class TCPDelegate:virtual public cc::TcpServer::Delegate{
-    virtual void recieve(const cc::TcpServer::Client& client,void* buffer, size_t size){
-        std::string str((char* )buffer,size);
-        std::string info;
-        client.ep.info(info);
-        std::cout << info << std::endl;
-        std::cout << str << std::endl;
+class nn : virtual public cc::Object
+{
+public:
+    nn(){}
+    virtual ~nn(){
+        this->release();
     }
-    virtual ~TCPDelegate(){
-        
+    virtual void dealloc(){
+        std::cout<<"nn"<<std::endl;
     }
 };
-
-cc::TcpServer* g_server = nullptr;
-
-void server()
-{
-    g_server = new cc::TcpServer(cc::AddressFamily::Ipv4);
-
-    g_server->Listen(8080,new TCPDelegate());
+cc::Object mk(cc::Object m){
+    std::cout<<m.refCount()<<std::endl;
+    return m;
+}
+void mkk(cc::Object &&m){
+    std::cout<<m.refCount()<<std::endl;
 }
 int main()
 {
-
-    std::shared_ptr<std::array<int,100>> k(new std::array<int,100>());
-
-    std::shared_ptr<std::array<int,100>> *k1 = new std::shared_ptr<std::array<int,100>>(k);
-    std::shared_ptr<std::array<int,100>> *k2 = new std::shared_ptr<std::array<int,100>>(k);
-    for (size_t i = 0; i < 100; i++)
+    cc::Object *m = new nn();
+    std::cout<<m->refCount()<<std::endl; 
     {
-        (*k)[i] = i;
+        cc::Object n(*m);
+        std::cout<<m->refCount()<<std::endl; 
+        cc::Object a = n;
+        std::cout<<m->refCount()<<std::endl;  
+        mkk(mk(a));
     }
-    delete k1;
-    delete k2;
-    for (size_t i = 50; i < 100; i++)
-    {
-        int c = (*k)[i]; 
-        int a = (**k1)[i];
-        std::cout << a << std::endl;
-    } 
+    std::cout<<m->refCount()<<std::endl; 
+    delete m;
     
-
-
-    server();
-    while (true)
-    {
-        std::this_thread::sleep_for(std::chrono::seconds(20));
-    }
-    
-
     return 0;
 }
+
 void testPipe()
 {
     int fd[2];
@@ -74,7 +58,6 @@ void testPipe()
         {
             std::this_thread::sleep_for(std::chrono::seconds(20));
             write(fd[1], "aaaa", 4);
-            
         }
     }
     else
@@ -85,13 +68,18 @@ void testPipe()
         while (true)
         {
             int c = s.wait(1);
-            if (c > 0){
-                std::memset(buf,0,64);
+            if (c > 0)
+            {
+                std::memset(buf, 0, 64);
                 read(fd[0], buf, 64);
                 std::cout << buf << std::endl;
-            }else if (c < 0){
+            }
+            else if (c < 0)
+            {
                 std::cout << strerror(errno) << std::endl;
-            }else{
+            }
+            else
+            {
                 std::cout << "time out" << std::endl;
             }
         }

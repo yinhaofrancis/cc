@@ -18,41 +18,36 @@
 namespace cc
 {
 
-
-    class TcpServer
-    {
+    
+    class TcpConnectedClient:public virtual Object{   
     public:
-        struct Client
-        {
-            Stream stream;
-            EndPoint ep = EndPoint(0,0);
-            bool isInvalid = false;
-        };
-        struct Context{
-            Select select;
-            Select clientSelect;
-            AddressFamily af;
-            Stream stream;
-            bool m_runing = false;
-            std::unordered_map<int,Client> clients;
-            std::mutex lock;
-        };
-        class Delegate{
-        public:
-            virtual void recieve(const TcpServer::Client&,void* buffer, size_t size) = 0;
-            virtual ~Delegate() = 0;
-        };
-    public:
-
-        TcpServer(AddressFamily af);
-        ~TcpServer();
-        void Listen(uint16_t port,Delegate *delegate);
-        bool isRunning();
+        TcpConnectedClient(int socketfd,sockaddr* address);
+        virtual ~TcpConnectedClient();
+        virtual void dealloc();
+        void Close() const;
+        void Send(const Block& block) const;
     private:
-        Context* m_ctx = nullptr;
+        void notifyCanSend();
+        std::vector<Block> *m_block;
+        Stream m_stream;
+        sockaddr m_address;
+    };
+
+    class TcpServer{
+
+    public:
+        TcpServer(AddressFamily m_af);
+        ~TcpServer();
+        TcpServer(const TcpServer&) = delete;
+        TcpServer(const TcpServer&&) = delete;
+        void Listen(uint16_t port);
+        void recieve();
+
+
+    private:
         AddressFamily m_af;
-        void RecieveDataProcess(cc::TcpServer::Context *c_ctx, void *buffer, Delegate *delegate);
-        void ErrorStreamProcess(cc::TcpServer::Context *c_ctx);
+        Stream * m_server;
+        Select * m_select;
     };
 } // namespace cc
 
