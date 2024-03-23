@@ -4,7 +4,7 @@
 #include <map>
 #include <iostream>
 
-const size_t buffer_size = 4096;
+const size_t buffer_size = 1024;
 
 cc::TcpConnectedClient::TcpConnectedClient(Stream &socketfd, EndPoint &address,TcpServer* server)
     : m_stream(socketfd),
@@ -24,6 +24,11 @@ cc::TcpConnectedClient::~TcpConnectedClient()
 
 void cc::TcpConnectedClient::dealloc()
 {
+    for (auto &&i : *m_block)
+    {
+        i.dealloc();
+    }
+    m_block->clear();
     delete m_block;
 }
 
@@ -46,11 +51,12 @@ void cc::TcpConnectedClient::Send(const Block &block) const
 
 void cc::TcpConnectedClient::Recieve()
 {
-    void *m_w = malloc(1024);
+    void *m_w = malloc(buffer_size);
     int c = 0;
+    std::vector<Block> datas;
     do
     {
-        c = this->m_stream.Read(m_w, 1024);
+        c = this->m_stream.Read(m_w, buffer_size);
         if (c > 0)
         {
             Block bk(m_w, c);
@@ -58,9 +64,23 @@ void cc::TcpConnectedClient::Recieve()
             if(m_delegate != nullptr){
                 this->delegate()->recieve(bk);
             }
-            this->Send(bk);
+            datas.push_back(bk);
+            if(c < buffer_size){
+                break;
+            }
+        }else if (c == 0) {
+            std::string ipt;
+            this->m_address.info(ipt);
+            std::cout << ipt << std::endl << "disconnected" << std::endl;
+            this->Close();
+        }else{
+            std::cout <<errno << "    " << strerror(errno) << std::endl;
+            this->Close();
         }
     } while (c > 0);
+    for (auto &&i:datas){
+        this->Send(i);
+    }
     free(m_w);
 }
 
@@ -99,6 +119,7 @@ cc::TcpServer::TcpServer(AddressFamily af) : m_af(af)
 cc::TcpServer::~TcpServer()
 {
     this->m_is_running = false;
+    m_task->join();
     delete m_task;
     delete m_server;
     delete m_select;
@@ -146,7 +167,12 @@ void cc::TcpServer::Listen(uint16_t port)
                 for (auto &&i : fd){
                    this->m_clients[i].notifyCanSend(); 
                 }
-
+                fd.clear();
+                this->m_select->occur_error(fd);
+                for (auto &&i : fd){
+                    std::cout << "clean: fd " << i << std::endl;
+                    this->m_clients.erase(i);
+                } 
             }
         } });
 }

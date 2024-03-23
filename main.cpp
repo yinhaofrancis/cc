@@ -32,7 +32,6 @@ void mkk(cc::Object &&m){
 }
 int main()
 {
-    
     cc::TcpServer ts(cc::Ipv4); 
     ts.Listen(8080);
 
