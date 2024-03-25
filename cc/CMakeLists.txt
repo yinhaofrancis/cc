@@ -18,8 +18,6 @@ add_library(
     time.hpp
     tcp.cpp
     tcp.hpp
-    object.hpp 
-    object.cpp
 )
 else()
 add_library(
@@ -35,8 +33,6 @@ add_library(
     time.hpp
     tcp.cpp
     tcp.hpp
-    object.hpp 
-    object.cpp
 )
 endif()
 

@@ -1,44 +1,90 @@
 #include "ref.hpp"
 
-void cc::RefCount::operator=(RefCount &rc)
-{
+
+cc::Ref::Ref():m_count(new cc::Ref::Count*(new cc::Ref::Count(1))){
 }
-void cc::RefCount::operator=(RefCount &&rc)
+
+cc::Ref::~Ref()
 {
+    release();
 }
-void cc::RefCount::release()
+
+cc::Ref::Ref(const Ref & r):m_count(new cc::Ref::Count*())
 {
-    m_mutex->lock();
+    *m_count = *r.m_count;
+    retain();
+}
+
+cc::Ref::Ref(const Ref && r):m_count(new cc::Ref::Count*())
+{
+    *m_count = *r.m_count;
+    retain();
+}
+
+void cc::Ref::operator=(const Ref & r)
+{
+    
+    if(*this->m_count != nullptr){
+        release();
+    }
+    m_count = new cc::Ref::Count*();
+    *m_count = *r.m_count;
+    retain();
+}
+
+void cc::Ref::operator=(const Ref && r)
+{
+    if(*this->m_count != nullptr){
+        release();
+    }
+    m_count = new cc::Ref::Count*();
+    *m_count = *r.m_count;
+    retain();
+}
+
+u_int64_t cc::Ref::count()
+{
     if(m_count != nullptr && *m_count != nullptr){
-        **m_count--;
-        if(**m_count == 0){
-            delete *m_count;
-            delete m_count;
-            m_count = nullptr;
+        return (*m_count)->count;
+    }
+    return 0;
+}
+
+
+
+void cc::Ref::dealloc(std::function<void()> dealloc)
+{
+    (*this->m_count)->m_dealloc.push_back(dealloc);
+}
+
+inline void cc::Ref::release()
+{
+    m_lock.lock();
+    if(m_count != nullptr && *m_count != nullptr)
+        (**m_count).count--;
+    m_lock.unlock();
+    if((**m_count).count == 0){
+        for (auto &&i : (*this->m_count)->m_dealloc)
+        {
+            i();
         }
+        (*this->m_count)->m_dealloc.clear();
+        delete  *m_count;
+        *m_count = nullptr;
     }
-    m_mutex->unlock();
-}
-void cc::RefCount::retain()
-{
-    m_mutex->lock();
-    if(m_count != nullptr && *m_count != nullptr){
-        **m_count++;
-    }
-    m_mutex->unlock();
-}
-cc::RefCount::RefCount(uint64_t count)
-{
-    m_count = new uint64_t*[1];
-    *m_count = new uint64_t(count);
-    m_mutex = new std::mutex();
+    delete m_count;
+    m_count = nullptr;
 }
 
-cc::RefCount::RefCount(RefCount &rc)
+inline void cc::Ref::retain()
 {
-
+    m_lock.lock();
+    if(m_count != nullptr && *m_count != nullptr)
+        (**m_count).count++;
+    m_lock.unlock();
 }
-cc::RefCount::RefCount(RefCount &&rc)
-{
 
+cc::Ref::Count::Count(uint64_t count):count(count)
+{
+    
 }

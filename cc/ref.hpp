@@ -1,24 +1,35 @@
 #ifndef REF_HPP
 #define REF_HPP
-#include <atomic>
 #include <mutex>
+#include <unistd.h>
+#include <functional>
+#include <vector>
 namespace cc
 {
-    class RefCount{
-
-       RefCount(uint64_t count);
-       RefCount(RefCount & rc);
-       RefCount(RefCount && rc); 
-       void operator=(RefCount & rc);
-       void operator=(RefCount && rc);
-       void release();
-       void retain();
+    class Ref
+    {
+        struct Count{
+            uint64_t count;
+            std::vector<std::function<void()>> m_dealloc;
+            Count(uint64_t count);
+        };
+    public:
+        Ref();
+        virtual ~Ref();
+        Ref(const Ref&);
+        Ref(const Ref&&);
+        void operator=(const Ref&);
+        void operator=(const Ref&&);
+        u_int64_t count();
+    protected:
+        void dealloc(std::function<void()> dealloc);
     private:
-       uint64_t ** m_count;
-       std::mutex *m_mutex;
+        void inline release();
+        void inline retain();
+        std::mutex m_lock;
+        Count** m_count;
+        
     };
 }
-
-
 
 #endif

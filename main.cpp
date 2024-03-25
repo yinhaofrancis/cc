@@ -10,32 +10,14 @@
 #include "cc/stream.hpp"
 #include "main.h"
 #include "cc/tcp.hpp"
-#include "cc/object.hpp"
 
-class nn : virtual public cc::Object
-{
-public:
-    nn(){}
-    virtual ~nn(){
-        this->release();
-    }
-    virtual void dealloc(){
-        std::cout<<"nn"<<std::endl;
-    }
-};
-cc::Object mk(cc::Object m){
-    std::cout<<m.refCount()<<std::endl;
-    return m;
-}
-void mkk(cc::Object &&m){
-    std::cout<<m.refCount()<<std::endl;
-}
+
 int main()
 {
     cc::TcpServer ts(cc::Ipv4); 
     ts.Listen(8080);
 
-    std::this_thread::sleep_for(std::chrono::seconds(300));
+    std::this_thread::sleep_for(std::chrono::seconds(3600));
 
     return 0;
 }

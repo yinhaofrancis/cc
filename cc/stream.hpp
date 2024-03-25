@@ -10,7 +10,6 @@
 #include <vector>
 #include <cstring>
 
-#include "object.hpp" 
 
 namespace cc
 {
