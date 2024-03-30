@@ -11,6 +11,14 @@ socket.cpp socket.hpp
 task.hpp task.cpp
 poll.cpp poll.hpp
 )
-add_library(ccm
-event.hpp event.cpp
-)
+
+if(APPLE)
+    add_library(ccm
+        event.hpp event.cpp
+    )
+else()
+    add_library(ccl
+        epoll.hpp epoll.cpp
+    )
+endif()
+

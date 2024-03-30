@@ -18,7 +18,7 @@
 #include "cc/socket.hpp"
 #include "cc/task.hpp"
 #include "cc/poll.hpp"
-#include "cc/event.hpp"
+
 
 
 void tudp()
@@ -64,16 +64,7 @@ int main()
         });
         
     }
-    cc::EventQueue eq;
-    eq.add_timer(1,cc::EventQueue::SECONDS,1);
-    while (true)
-    {
-        struct kevent event;
-        int i = eq.wait(0.5,event);
-        if(i > 0){
-            std::cout<< event.ident << std::endl;
-        }
-    }
+   
     
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
