@@ -28,7 +28,7 @@ void tudp()
     udp.Bind(localhost);
     udp.Listen(256);
     cc::Poll poll;
-    poll.add(udp.fd(), POLLIN);
+    poll.add(udp.fd(), cc::Poll::IN);
     while (true)
     {
         int i = poll.wait(10);
