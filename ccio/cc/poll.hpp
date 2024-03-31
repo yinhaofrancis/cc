@@ -31,6 +31,8 @@ namespace cc
         };
     public:
         Poll();
+        Poll(const Poll &) = delete;
+        Poll(const Poll &&) = delete;
         ~Poll();
         int wait(TimeInterval time,std::vector<Result> &events) const;
         void add(int fd,Event event);
