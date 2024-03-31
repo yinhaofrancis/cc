@@ -17,7 +17,7 @@ if(APPLE)
         event.hpp event.cpp
     )
 else()
-    add_library(ccl
+    add_library(ccm
         epoll.hpp epoll.cpp
     )
 endif()
