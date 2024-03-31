@@ -71,16 +71,17 @@ void ttcp()
                 {
                     cc::Block m(1024);
                     cc::Socket s(i.fd);
-                    s.addStatus(O_NONBLOCK);
                     int c = s.Recieve(m, 0);
                     if (c == 0){
                         poll.remove(i.fd);
                         s.Close();
-                        return;
+                        break;
                     }
                     if(c == -1){
                         std::cout << strerror(errno) << std::endl;
-                        return;
+                        poll.remove(i.fd);
+                        s.Close();
+                        break;
                     }
                     std::cout << "recieve: " << std::endl
                               << m.c_str() << std::endl;

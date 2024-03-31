@@ -7,6 +7,7 @@ cc::Poll::~Poll()
 
 int cc::Poll::wait(TimeInterval time,std::vector<Result>& pfds) const
 {
+    
     int r = poll(const_cast<pollfd *>(m_pfd->data()), m_pfd->size(), time * 1000);
     if (r > 0){
         for (auto &&i : *m_pfd)
@@ -17,6 +18,7 @@ int cc::Poll::wait(TimeInterval time,std::vector<Result>& pfds) const
                 r.events = static_cast<cc::Poll::Event>(i.events);
                 r.revents = static_cast<cc::Poll::Event>(i.revents);
                 pfds.push_back(r);
+                i.revents = 0;
             }
         }
         
