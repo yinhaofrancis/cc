@@ -76,12 +76,12 @@ void ttcp()
                     {
                         poll.remove(i.fd);
                         s.Close();
-                        return;
+                        break;;
                     }
                     if (c == -1)
                     {
                         std::cout << strerror(errno) << std::endl;
-                        return;
+                        break;
                     }
                     std::cout << "recieve: " << std::endl
                               << m.c_str() << std::endl;
