@@ -48,6 +48,7 @@ namespace cc
     {
     public:
         Socket(AddressFamily af,SockType st,Protocol proto);
+        Socket(int fd);
         ssize_t Send(const Block &, int flag);
         ssize_t Recieve(Block &, int flag);
         ssize_t SendTo(const Block &, const Address &address, int flag);

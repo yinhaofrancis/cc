@@ -19,8 +19,6 @@
 #include "cc/task.hpp"
 #include "cc/poll.hpp"
 
-
-
 void tudp()
 {
     auto udp = cc::Socket::createUDP(cc::ipv4);
@@ -31,7 +29,8 @@ void tudp()
     poll.add(udp.fd(), cc::Poll::IN);
     while (true)
     {
-        int i = poll.wait(10);
+        std::vector<cc::Poll::Result> ret;
+        int i = poll.wait(10, ret);
         if (i > 0)
         {
             cc::Block m(1024);
@@ -44,33 +43,75 @@ void tudp()
     }
     udp.Close();
 }
+void ttcp()
+{
+    auto tcp = cc::Socket::createTCP(cc::ipv4);
+    auto localhost = cc::Address(cc::ipv4, 8081);
+    tcp.Bind(localhost);
+    tcp.Listen(256);
+    cc::Poll poll;
+    poll.add(tcp.fd(), cc::Poll::IN);
+    while (true)
+    {
+        std::vector<cc::Poll::Result> ret;
+        int i = poll.wait(10, ret);
+        if (i > 0)
+        {
+            for (auto &&i : ret)
+            {
+                if (i.fd == tcp.fd())
+                {
+                    cc::Address as;
+                    int fd = tcp.Accept(as);
+                    std::cout << "accept ip: " << as.ipAddress() << " port: " << as.port() << std::endl;
+                    poll.add(fd,cc::Poll::IN);
 
+                }
+                else
+                {
+                    cc::Block m(1024);
+                    cc::Socket s(i.fd);
+                    s.addStatus(O_NONBLOCK);
+                    int c = s.Recieve(m, 0);
+                    if (c == 0){
+                        poll.remove(i.fd);
+                        s.Close();
+                        return;
+                    }
+                    if(c == -1){
+                        std::cout << strerror(errno) << std::endl;
+                        return;
+                    }
+                    std::cout << "recieve: " << std::endl
+                              << m.c_str() << std::endl;
+                }
+            }
+        }
+    }
+    tcp.Close();
+}
 void udp()
 {
     cc::Loop p;
     p.dispatch([]()
                { tudp(); });
     std::this_thread::sleep_for(std::chrono::seconds(100));
-    
 }
+void tcp()
+{
+    cc::Loop p;
+    p.dispatch([]()
+               { ttcp(); });
+    std::this_thread::sleep_for(std::chrono::seconds(20));
+}
+
+
 
 int main()
 {
-    cc::Pool *p = new cc::Pool(0);
-    for (size_t i = 0; i < 1000; i++)
-    {
-        p->dispatch([i](){
-            std::cout << i << std::endl;
-        });
-        
-    }
-   
-    
 
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    delete p;
-    
-    std::this_thread::sleep_for(std::chrono::seconds(100));
-    
+    tcp();    
 
+    int c;
+    std::cin >> c;
 }

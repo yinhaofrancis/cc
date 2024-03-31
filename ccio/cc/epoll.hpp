@@ -2,6 +2,7 @@
 #define EPOLL_HPP
 
 #include <sys/epoll.h>
+#include <vector>
 
 namespace cc
 {
@@ -10,7 +11,7 @@ namespace cc
     class Epoll
     {
     public:
-        enum EVENTS
+        enum Event
         {
             IN = 0x001,
             PRI = 0x002,
@@ -28,22 +29,27 @@ namespace cc
             ONESHOT = 1u << 30,
             ET = 1u << 31
         };
+        struct Result
+        {
+            uint64_t ident;
+            Event events;
+        };
+        
 
     public:
-        int wait(double timeinterval);
+        int wait(double timeinterval,std::vector<Result>& res) const;
         Epoll(const Epoll &) = delete;
         Epoll(const Epoll &&) = delete;
         Epoll();
         ~Epoll();
-        int add(int fd, EVENTS event);
-        int del(int fd, EVENTS event);
-        int mod(int fd, EVENTS event);
+        int add(int fd, Event event) const;
+        int del(int fd, Event event) const;
+        int mod(int fd, Event event) const;
 
     private:
         int m_epollfd = epoll_create1(0);
-        int change(int op, int fd, epoll_event &event);
-        int change(int op, int fd, EVENTS event);
-        struct epoll_event m_events[MAX_EVENTS];
+        int change(int op, int fd, epoll_event &event) const;
+        int change(int op, int fd, Event event) const;
     };
 } // namespace cc
 

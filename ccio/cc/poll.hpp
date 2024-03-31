@@ -26,16 +26,18 @@ namespace cc
             HUP		= 0x010,		/* Hung up.  */
             NVAL	= 0x020,	
         };
-
+        struct Result{
+            int fd; Event events,revents;
+        };
     public:
         Poll();
         ~Poll();
-        int wait(TimeInterval time);
+        int wait(TimeInterval time,std::vector<Result> &events) const;
         void add(int fd,Event event);
         void remove(int fd,Event event);
         void remove(int fd);
     private:
-        std::vector<pollfd> m_pfd;
+        std::vector<pollfd> *m_pfd;
     };
 } // namespace cc
 

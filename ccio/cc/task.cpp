@@ -31,13 +31,12 @@ cc::Pool::~Pool()
     {
         delete i;
     }
-    m_mutex.unlock(); 
+    m_mutex.unlock();
     std::unique_lock<std::mutex> lck(m_mutex);
     while (m_count > 0)
     {
         m_cv.wait(lck);
     }
-     
 }
 
 void cc::Pool::dispatch(Operation *op)
@@ -79,8 +78,7 @@ void cc::Pool::dispatch(Operation *op)
                             }
                         }
                         this->m_count--;
-                        this->m_cv.notify_one();
-                         })
+                        this->m_cv.notify_one(); })
             .detach();
     }
 }
@@ -106,36 +104,36 @@ cc::Loop::Loop()
     bool status = true;
     std::thread([this, status]()
                 {
-                        this->m_status = const_cast<bool*>(&status);
-                        while (status)
+                    this->m_status = const_cast<bool *>(&status);
+                    while (status)
+                    {
+                        m_mutex.lock();
+                        size_t size = this->m_queue.size();
+                        m_mutex.unlock();
+                        while (size > 0)
                         {
                             m_mutex.lock();
-                            size_t size = this->m_queue.size();
+                            auto front = this->m_queue.front();
+                            this->m_queue.pop_front();
+                            size = this->m_queue.size();
                             m_mutex.unlock();
-                            while (size > 0)
-                            {
-                                m_mutex.lock();
-                                auto front = this->m_queue.front();
-                                this->m_queue.pop_front();
-                                size = this->m_queue.size();
-                                m_mutex.unlock();
-                                front->exec();
-                                delete front;
-                            } 
-                            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                            front->exec();
+                            delete front;
                         }
-                        m_mutex.lock();
-                        for (auto i : this->m_queue)
-                        {
-                            delete i;
-                        }
-                        this->m_queue.clear();
-                        m_mutex.unlock();
-                    } 
-                ).detach();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    }
+                })
+        .detach();
 }
 cc::Loop::~Loop()
 {
+    m_mutex.lock();
+    for (auto i : this->m_queue)
+    {
+        delete i;
+    }
+    this->m_queue.clear();
+    m_mutex.unlock();
     *(this->m_status) = false;
 }
 

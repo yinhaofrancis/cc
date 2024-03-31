@@ -7,6 +7,10 @@ cc::Socket::Socket(AddressFamily af, SockType st, Protocol proto)
 :Stream(socket(af,st,proto)),m_af(af),m_st(st),m_proto(proto)
 {}
 
+cc::Socket::Socket(int fd):Stream(fd)
+{
+}
+
 ssize_t cc::Socket::Send(const Block &block, int flag)
 {
     return send(this->fd(), block.data(), block.size(), flag);
