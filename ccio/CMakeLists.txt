@@ -9,7 +9,7 @@ main.cpp
 )
 
 
-target_link_libraries(ccio cc ccl)
+target_link_libraries(ccio cc ccm)
 
 
 
