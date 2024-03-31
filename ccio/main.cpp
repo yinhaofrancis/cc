@@ -64,8 +64,7 @@ void ttcp()
                     cc::Address as;
                     int fd = tcp.Accept(as);
                     std::cout << "accept ip: " << as.ipAddress() << " port: " << as.port() << std::endl;
-                    poll.add(fd,cc::Poll::IN);
-
+                    poll.add(fd, cc::Poll::IN);
                 }
                 else
                 {
@@ -73,12 +72,14 @@ void ttcp()
                     cc::Socket s(i.fd);
                     s.addStatus(O_NONBLOCK);
                     int c = s.Recieve(m, 0);
-                    if (c == 0){
+                    if (c == 0)
+                    {
                         poll.remove(i.fd);
                         s.Close();
                         return;
                     }
-                    if(c == -1){
+                    if (c == -1)
+                    {
                         std::cout << strerror(errno) << std::endl;
                         return;
                     }
@@ -102,16 +103,14 @@ void tcp()
     cc::Loop p;
     p.dispatch([]()
                { ttcp(); });
-    std::this_thread::sleep_for(std::chrono::seconds(20));
+    while (true)
+    {
+        std::this_thread::sleep_for(std::chrono::seconds(20));
+    }
 }
-
-
 
 int main()
 {
 
-    tcp();    
-
-    int c;
-    std::cin >> c;
+    tcp();
 }

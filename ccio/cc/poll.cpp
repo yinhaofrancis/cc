@@ -17,6 +17,8 @@ int cc::Poll::wait(TimeInterval time,std::vector<Result>& pfds) const
                 r.events = static_cast<cc::Poll::Event>(i.events);
                 r.revents = static_cast<cc::Poll::Event>(i.revents);
                 pfds.push_back(r);
+                short *s = &i.revents;
+                *s = 0;
             }
         }
         

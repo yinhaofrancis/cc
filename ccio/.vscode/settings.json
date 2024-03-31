@@ -78,5 +78,6 @@
         "locale": "cpp",
         "optional": "cpp",
         "variant": "cpp"
-    }
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.cmake-tools"
 }

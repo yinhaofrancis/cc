@@ -9,7 +9,7 @@
 
 namespace cc
 {
-    class Stream:Ref{
+    class Stream{
     public:
         Stream(int fd = 0);
         int Open(const char* path,int flag);

@@ -3,9 +3,6 @@
 #include <string.h>
 #include <iostream>
 cc::Stream::Stream(int fd):m_fd(fd){
-    this->dealloc([this](){
-        Close();
-    });
 }
 
 int cc::Stream::Open(const char *path, int flag,mode_t mode)
