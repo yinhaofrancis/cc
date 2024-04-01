@@ -16,7 +16,7 @@ cc::TCPServer::~TCPServer()
 void cc::TCPServer::SetDelegate(TCPServerDelegate *delegate)
 {
     this->m_pool->dispatch([this, delegate]()
-                           {
+    {
         this->m_is_running = true;
         while (this->m_is_running)
         {
