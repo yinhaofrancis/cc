@@ -59,11 +59,12 @@ namespace cc
 
         static Socket createTCP(AddressFamily af);
         static Socket createUDP(AddressFamily af);
-    private:
+    protected:
         AddressFamily m_af;
         SockType m_st;
         Protocol m_proto;
     };
+
 } // namespace cc
 
 #endif

@@ -1,3 +1,7 @@
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
+    include(../cmake/cross_compile.cmake)
+endif()
+
 cmake_minimum_required(VERSION 3.20.0)
 project(cc VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
@@ -10,6 +14,7 @@ stream.hpp stream.cpp
 socket.cpp socket.hpp 
 task.hpp task.cpp
 poll.cpp poll.hpp
+server.cpp server.hpp
 )
 
 if(APPLE)
@@ -21,4 +26,3 @@ else()
         epoll.hpp epoll.cpp
     )
 endif()
-

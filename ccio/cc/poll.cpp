@@ -29,13 +29,23 @@ int cc::Poll::wait(TimeInterval time,std::vector<Result>& pfds) const
 
 void cc::Poll::add(int fd, Event event)
 {
-    m_pfd->push_back((pollfd){fd, (short)event, 0});
+    auto iidex = std::find_if(m_pfd->begin(),m_pfd->end(),[fd](pollfd& i){return i.fd == fd;});
+
+    if(iidex != m_pfd->end()){
+        iidex->events |= event;
+    }else{
+        m_pfd->push_back((pollfd){fd, (short)event, 0});
+    }
+    
 }
 
 void cc::Poll::remove(int fd, Event event)
 {
-    m_pfd->erase(std::find_if(m_pfd->begin(), m_pfd->end(), [fd, event](pollfd &pfd)
-                             { return pfd.fd == fd && pfd.events == event; }));
+    auto iidex = std::find_if(m_pfd->begin(),m_pfd->end(),[fd](pollfd& i){return i.fd == fd;});
+
+    if(iidex != m_pfd->end()){
+        iidex->events &= ~event;
+    }
 }
 void cc::Poll::remove(int fd)
 {

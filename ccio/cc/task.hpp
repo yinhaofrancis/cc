@@ -34,6 +34,7 @@ namespace cc
         void dispatch(std::function<void()> &&);
         uint64_t count();
         uint64_t workCount();
+        void Wait();
     private:
         std::deque<Operation*> m_queue;
         const int m_maxCount;
@@ -50,12 +51,14 @@ namespace cc
         ~Loop();
         Loop(const Loop&) = delete;
         Loop(const Loop&&) = delete;
+        void Wait();
         void dispatch(std::function<void()> &&);
     private:
-        bool *m_status;
+        bool *m_status = nullptr;
         void dispatch(Operation *);
         std::deque<Operation *> m_queue;
         std::mutex m_mutex;
+        std::thread* m_thread = nullptr;
     };
 } // namespace cc
 
