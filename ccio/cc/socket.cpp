@@ -58,12 +58,12 @@ cc::Socket cc::Socket::createUDP(AddressFamily af)
     return Socket(af,dgram,udp);
 }
 
-cc::AddressFamily cc::Address::family()
+cc::AddressFamily cc::Address::family() const
 {
     return (AddressFamily)m_address->sa_family;
 }
 
-uint16_t cc::Address::port()
+uint16_t cc::Address::port() const
 {
     switch (family())
     {
@@ -143,7 +143,7 @@ cc::Address::Address(AddressFamily af, uint16_t port)
 cc::Address::Address():Address(cc::ipv4,0)
 {}
 
-std::string cc::Address::ipAddress()
+std::string cc::Address::ipAddress() const
 {
     char result[256];
     std::memset(result, 0, sizeof(result));

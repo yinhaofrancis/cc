@@ -33,10 +33,10 @@ namespace cc
         Address(AddressFamily af, const char *ip, uint16_t port);
         Address(AddressFamily af, uint16_t port);
         Address();
-         AddressFamily family();
-        uint16_t port();
+        AddressFamily family() const;
+        uint16_t port() const;
         void modifyAddress(AddressFamily af, const char *ip,uint16_t port);
-        std::string ipAddress();
+        std::string ipAddress() const;
         friend class Socket;
     private:
         sockaddr *m_address = nullptr;

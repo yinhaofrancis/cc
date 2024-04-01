@@ -46,22 +46,25 @@ void cc::TCPServer::SetDelegate(TCPServerDelegate *delegate)
                         Client client(result.fd);
                         Socket read(result.fd);
                         Block block(1024);
+                        Address address = this->m_map_client[result.fd];
                         int c = read.Recieve(block,0);
                         if (c > 0){
-                            delegate->onRead(*this,client,block);
+                            delegate->onRead(*this,client,address,block);
                         }else if (c == 0){
-                            delegate->onDisconnect(*this,client,nullptr);
+                            m_map_client.erase(result.fd);
+                            delegate->onDisconnect(*this,client,address,nullptr);
                             client.Close();
                         }else if (c == -1){
-                            delegate->onDisconnect(*this,client,strerror(errno));
+                            m_map_client.erase(result.fd);
+                            delegate->onDisconnect(*this,client,address,strerror(errno));
                             client.Close();
                         }
                     }else if(result.revents & cc::Poll::Event::OUT)
                     {
+                        Address& address = this->m_map_client[result.fd];
                         this->m_poll.remove(result.fd,cc::Poll::Event::OUT);
                         Client client(result.fd);
-                        delegate->onWrite(*this,client);
-                        
+                        delegate->onWrite(*this,client,address);
                     }
                 }
             }

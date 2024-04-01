@@ -40,23 +40,23 @@ namespace cc
     class TCPServerDelegate{
     public:
         virtual void onConnect(TCPServer& server, Client &fd,Address& address) {
-            std::cout << "onConnect:" << address.ipAddress() << std::endl;
+            std::cout << address.ipAddress() << " onConnect"  << std::endl;
             server.PrepareSend(fd);
         };
-        virtual void onDisconnect(TCPServer& server,Client &fd,const char* msg) {
+        virtual void onDisconnect(TCPServer& server,Client &fd,const Address &address,const char* msg) {
             if(msg != nullptr){
-                std::cout << "onDisconnect:" << msg << std::endl;
+                std::cout << address.ipAddress() << " onDisconnect with error:" << msg << std::endl;
             }else{
-                std::cout << "onDisconnect"  << std::endl;
+                std::cout  << address.ipAddress() << " onDisconnect"  << std::endl;
             }
             
         };
-        virtual void onRead(TCPServer& server,Client &fd,Block& block) {
-            std::cout << "onRead:" << block.c_str() << std::endl;
+        virtual void onRead(TCPServer& server,Client &fd,const Address &address,Block& block) {
+            std::cout << address.ipAddress() << " onRead:" << block.c_str() << std::endl;
             server.PrepareSend(fd);
         };
-        virtual void onWrite(TCPServer& server,Client &fd) {
-            std::cout << "onWrite"<< std::endl;
+        virtual void onWrite(TCPServer& server,Client &fd,const Address &address) {
+            std::cout << address.ipAddress() << " onWrite"<< std::endl;
             Block b("hello");
             fd.Send(b,0);
         };
