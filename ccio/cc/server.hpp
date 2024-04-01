@@ -35,7 +35,7 @@ namespace cc
         bool m_is_running = false;
         Pool * m_pool;
         Poll m_poll;
-        std::unordered_map<int,Client> m_map_client;
+        std::unordered_map<int,Address> m_map_client;
     };
     class TCPServerDelegate{
     public:
