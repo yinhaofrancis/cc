@@ -1,43 +1,43 @@
 #ifndef __CCIO_H__
 #define __CCIO_H__
 
-extern "C"{
-    #include <stdio.h>
-    #include <stdlib.h>
-    #include <string.h>
-    #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
+struct ccio_addr
+{
+    const char *ip;
+    uint16_t port;
+};
+struct ccio_client
+{
+    int fd;
+    ccio_addr addr;
+};
 
-    struct ccio_addr
-    {
-        const char* ip;
-        uint16_t port;
-    };
-    
-    struct  ccio
-    {
-        void (*onConnect)(void* userdata,int fd,ccio_addr * addr);
-        void (*onDisconnect)(void* userdata,int fd,ccio_addr * addr);
-        void (*onRead)(void* userdata,int fd,ccio_addr * addr,const void *buffer,size_t size);
-        void (*onWrite)(void* userdata,int fd,ccio_addr * addr);
-        void * context;
-        void * server;
-        void * userdata;
-    };
+struct ccio
+{
+    void (*onConnect)(void *userdata, ccio *cc, ccio_client *client);
+    void (*onDisconnect)(void *userdata, ccio *cc, ccio_client *client);
+    void (*onRead)(void *userdata, ccio *cc, ccio_client *client, const void *buffer, size_t size);
+    void (*onWrite)(void *userdata, ccio *cc, ccio_client *client);
+    void *context;
+    void *server;
+    void *userdata;
+};
 
+ccio *create_ccio();
 
+int ccio_tcp_init(ccio **cc, uint16_t port, void *userData);
 
-    ccio* create_ccio();
+void ccio_tcp_wait(ccio **cc);
 
-    int ccio_init_tcp(ccio ** cc,uint16_t port,void *userData);
+void ccio_tcp_prepare_send(ccio **cc, int fd);
 
-    void ccio_wait(ccio **cc);
+void ccio_tcp_send(ccio_client *client, const void *data, size_t len);
 
-    void ccio_pending_send(ccio* cc,int fd);
+void free_ccio(ccio **);
 
-    void free_ccio(ccio**);
-
-
-
-}
 #endif

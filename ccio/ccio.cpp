@@ -17,7 +17,8 @@ public:
         if(m_ccio->onConnect != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            m_ccio->onConnect(m_ccio->userdata,fd.fd(),&ca);
+            ccio_client cl = (ccio_client){fd.fd(),ca};
+            m_ccio->onConnect(m_ccio->userdata,m_ccio,&cl);
         }
     };
     virtual void onDisconnect(TCPServer &server, Client &fd, const Address &address, const char *msg)
@@ -25,7 +26,8 @@ public:
         if(m_ccio->onDisconnect != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            m_ccio->onDisconnect(m_ccio->userdata,fd.fd(),&ca);
+            ccio_client cl = (ccio_client){fd.fd(),ca};
+            m_ccio->onDisconnect(m_ccio->userdata,m_ccio,&cl);
         }
     };
     virtual void onRead(TCPServer &server, Client &fd, const Address &address, Block &block)
@@ -33,7 +35,8 @@ public:
         if(m_ccio->onRead != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            m_ccio->onRead(m_ccio->userdata,fd.fd(),&ca,block.data(),block.size());
+            ccio_client cl = (ccio_client){fd.fd(),ca};
+            m_ccio->onRead(m_ccio->userdata,m_ccio,&cl,block.data(),block.size());
         }
     };
     virtual void onWrite(TCPServer &server, Client &fd, const Address &address)
@@ -41,14 +44,15 @@ public:
         if(m_ccio->onWrite != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            m_ccio->onWrite(m_ccio->userdata,fd.fd(),&ca);
+            ccio_client cl = (ccio_client){fd.fd(),ca};
+            m_ccio->onWrite(m_ccio->userdata,m_ccio,&cl);
         }
     };
     ccio* m_ccio;
 };
 
 
-int ccio_init_tcp(ccio ** cc,uint16_t port,void *userdata)
+int ccio_tcp_init(ccio ** cc,uint16_t port,void *userdata)
 {
     auto servr = new cc::TCPServer(cc::AddressFamily::ipv4);
     auto delegate = new ccio_server();
@@ -67,11 +71,18 @@ ccio *create_ccio()
     memset(ptr,0,sizeof(ccio));
     return reinterpret_cast<ccio*>(ptr);
 }
-void ccio_wait(ccio **cc)
+void ccio_tcp_wait(ccio **cc)
 {
    if ((*cc)->server != nullptr){
         reinterpret_cast<TCPServer*>((*cc)->server)->WaitClose();
     } 
+}
+
+void ccio_tcp_send(ccio_client *client, const void *data, size_t len)
+{
+    cc::Socket s(client->fd);
+    cc::Block block(data,len);
+    s.Send(block,0);
 }
 void free_ccio(ccio **cc)
 {
@@ -85,7 +96,7 @@ void free_ccio(ccio **cc)
     *cc = nullptr;
 }
 
-void ccio_pending_send(ccio **cc, int fd)
+void ccio_tcp_prepare_send(ccio **cc, int fd)
 {
     auto server = reinterpret_cast<TCPServer*>((*cc)->server);
     cc::Client c(fd);
