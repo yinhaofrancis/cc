@@ -10,42 +10,50 @@
 namespace cc
 {
 
-    class TCPServerDelegate;
+    class ServerDelegate;
     class Client : protected Socket
     {
     public:
-        Client(int fd);
+        Client(int fd,const Address &address,Protocol &protocol);
         int fd();
         ssize_t Send(const Block &, int flag);
-        ssize_t SendTo(const Block &, const Address &address, int flag);
         void Close();
+    protected:
+        Address m_address;
+        Protocol m_proto;
     };
-    class TCPServer : protected Socket
+
+    class Server : protected Socket
     {
     public:
-        TCPServer(const TCPServer &) = delete;
-        TCPServer(const TCPServer &&) = delete;
-        TCPServer(AddressFamily af);
-        ~TCPServer();
-        void SetDelegate(TCPServerDelegate *delegate);
-        void Start(uint16_t port);
+        Server(const Server &) = delete;
+        Server(const Server &&) = delete;
+        Server(AddressFamily af,SockType sock,Protocol proto);
+        ~Server();
+        void SetDelegate(ServerDelegate *delegate);
+        
+        int Start(uint16_t port);
         void Stop();
         void WaitClose();
-        void PrepareSend(Client &client);
+        void PrepareSend(int);
+        Client PrepareSendTo(Address &address);
 
     private:
         bool m_is_running = false;
         Pool *m_pool;
         Poll m_poll;
         std::unordered_map<int, Address> m_map_client;
+        void tcp_server_core_process(cc::ServerDelegate *delegate);
+        void udp_server_core_process(cc::ServerDelegate *delegate);
+        
     };
-    class TCPServerDelegate
+    class ServerDelegate
     {
     public:
-        virtual void onConnect(TCPServer &server, Client &fd, Address &address){};
-        virtual void onDisconnect(TCPServer &server, Client &fd, const Address &address, const char *msg){};
-        virtual void onRead(TCPServer &server, Client &fd, const Address &address, Block &block){};
-        virtual void onWrite(TCPServer &server, Client &fd, const Address &address){};
+        virtual void onConnect(Server &server, Client &fd, Address &address){};
+        virtual void onDisconnect(Server &server, Client &fd, const Address &address, const char *msg){};
+        virtual void onRead(Server &server, Client &fd, const Address &address, Block &block){};
+        virtual void onWrite(Server &server, Client &fd, const Address &address){};
     };
 } // namespace cc
 

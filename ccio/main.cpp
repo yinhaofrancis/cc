@@ -28,6 +28,7 @@ void m_onRecieve(void* userdata,ccio* cc,ccio_client* client,const void* data,si
     memcpy(c,data,len);
     std::cout << "recieve " << client->addr.ip << " " << client->addr.port << std::endl << c << std::endl;
     free(c);
+    ccio_udp_send(&cc,client->addr,"hello",5);
     
 }void m_onWrite(void* userdata,ccio* cc,ccio_client* client){
     std::cout << "write " << client->addr.ip << " " << client->addr.port << std::endl;
@@ -41,7 +42,7 @@ int main(){
     c->onDisconnect = m_onDisconnect;
     c->onRead = m_onRecieve;
     c->onWrite = m_onWrite;
-    ccio_tcp_init(&c,8080,nullptr);
-    ccio_tcp_wait(&c);
+    ccio_udp_init(&c,8080,nullptr);
+    ccio_wait(&c);
     return 0;
 }

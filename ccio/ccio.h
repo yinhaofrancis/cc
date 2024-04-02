@@ -30,14 +30,19 @@ struct ccio
 
 ccio *create_ccio();
 
-int ccio_tcp_init(ccio **cc, uint16_t port, void *userData);
+void ccio_wait(ccio **cc);
 
-void ccio_tcp_wait(ccio **cc);
+void free_ccio(ccio **);
+
+int ccio_tcp_init(ccio **cc, uint16_t port, void *userData);
 
 void ccio_tcp_prepare_send(ccio **cc, int fd);
 
 void ccio_tcp_send(ccio_client *client, const void *data, size_t len);
 
-void free_ccio(ccio **);
+
+int ccio_udp_init(ccio **cc, uint16_t port, void *userData);
+
+void ccio_udp_send(ccio **cc, ccio_addr address,const void* block,size_t size);
 
 #endif
