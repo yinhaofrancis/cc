@@ -4,6 +4,7 @@
 #include <vector>
 #include <signal.h>
 #include <sys/poll.h>
+#include "task.hpp"
 typedef double TimeInterval;
 namespace cc
 {
@@ -33,13 +34,33 @@ namespace cc
         Poll();
         Poll(const Poll &) = delete;
         Poll(const Poll &&) = delete;
-        ~Poll();
+        virtual ~Poll();
         int wait(TimeInterval time,std::vector<Result> &events) const;
         void add(int fd,Event event);
         void remove(int fd,Event event);
         void remove(int fd);
     private:
         std::vector<pollfd> *m_pfd;
+    };
+    class AsyncPoll:protected Poll {
+    public:
+        class AsyncPollCallback{
+            virtual void onEvent(AsyncPoll &poll,Result&);
+            friend class AsyncPoll;
+        };
+    public:
+        AsyncPoll();
+        AsyncPoll(const Poll &) = delete;
+        AsyncPoll(const Poll &&) = delete;
+        virtual ~AsyncPoll();
+        void add(int fd,Event event,AsyncPollCallback*);
+        void remove(int fd,Event event);
+        void remove(int fd);
+    private:
+        std::mutex m_lock;
+        std::unordered_map<int,AsyncPollCallback*> m_handle;
+        Loop *m_loop;
+        bool m_is_running;
     };
 } // namespace cc
 

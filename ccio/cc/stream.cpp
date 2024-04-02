@@ -99,7 +99,7 @@ int cc::Stream::Pipe(Stream &read, Stream &write)
     return ret;
 }
 
-int cc::Stream::fd()
+int cc::Stream::fd() const
 {
     return m_fd;
 }

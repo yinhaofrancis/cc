@@ -12,39 +12,39 @@ public:
     {
     }
 
-    virtual void onConnect(Server &server, Server::Client &fd, Address &address)
+    virtual void onConnect(ServerTest &server, ServerTest::Sender &fd, Address &address)
     {
         if(m_ccio->onConnect != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            ccio_client cl = (ccio_client){fd.fd(),ca};
+            ccio_client cl = (ccio_client){fd.fd(),ca,&fd};
             m_ccio->onConnect(m_ccio->userdata,m_ccio,&cl);
         }
     };
-    virtual void onDisconnect(Server &server, Server::Client &fd, const Address &address, const char *msg)
+    virtual void onDisconnect(ServerTest &server, ServerTest::Sender &fd, const Address &address, const char *msg)
     {
         if(m_ccio->onDisconnect != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            ccio_client cl = (ccio_client){fd.fd(),ca};
+            ccio_client cl = (ccio_client){fd.fd(),ca,&fd};
             m_ccio->onDisconnect(m_ccio->userdata,m_ccio,&cl);
         }
     };
-    virtual void onRead(Server &server, Server::Client &fd, const Address &address, Block &block)
+    virtual void onRead(ServerTest &server, ServerTest::Sender &fd, const Address &address, Block &block)
     {
         if(m_ccio->onRead != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            ccio_client cl = (ccio_client){fd.fd(),ca};
+            ccio_client cl = (ccio_client){fd.fd(),ca,&fd};
             m_ccio->onRead(m_ccio->userdata,m_ccio,&cl,block.data(),block.size());
         }
     };
-    virtual void onWrite(Server &server, Server::Client &fd, const Address &address)
+    virtual void onWrite(ServerTest &server, ServerTest::Sender &fd, const Address &address)
     {
         if(m_ccio->onWrite != nullptr){
             auto addr = address.ipAddress();
             ccio_addr ca = {addr.c_str(), address.port()};
-            ccio_client cl = (ccio_client){fd.fd(),ca};
+            ccio_client cl = (ccio_client){fd.fd(),ca,&fd};
             m_ccio->onWrite(m_ccio->userdata,m_ccio,&cl);
         }
     };
@@ -54,7 +54,7 @@ public:
 
 int ccio_tcp_init(ccio ** cc,uint16_t port,void *userdata)
 {
-    auto servr = new cc::Server(cc::AddressFamily::ipv4,cc::SockType::stream,cc::Protocol::tcp);
+    auto servr = new cc::ServerTest(cc::AddressFamily::ipv4,cc::SockType::stream,cc::Protocol::tcp);
     auto delegate = new ccio_server();
     
     servr->SetDelegate(delegate);
@@ -74,7 +74,7 @@ ccio *create_ccio()
 void ccio_wait(ccio **cc)
 {
    if ((*cc)->server != nullptr){
-        reinterpret_cast<Server*>((*cc)->server)->WaitClose();
+        reinterpret_cast<ServerTest*>((*cc)->server)->WaitClose();
     } 
 }
 
@@ -86,7 +86,7 @@ void ccio_tcp_send(ccio_client *client, const void *data, size_t len)
 }
 int ccio_udp_init(ccio **cc, uint16_t port, void *userdata)
 {
-    auto servr = new cc::Server(cc::AddressFamily::ipv4,cc::SockType::dgram,cc::Protocol::udp);
+    auto servr = new cc::ServerTest(cc::AddressFamily::ipv4,cc::SockType::dgram,cc::Protocol::udp);
     auto delegate = new ccio_server();
     
     servr->SetDelegate(delegate);
@@ -99,10 +99,10 @@ int ccio_udp_init(ccio **cc, uint16_t port, void *userdata)
 }
 void ccio_udp_send(ccio **cc, ccio_addr address,const void* block,size_t size)
 {
-    auto server = reinterpret_cast<Server*>((*cc)->server);
+    auto server = reinterpret_cast<ServerTest*>((*cc)->server);
     cc::Address addr(cc::AddressFamily::ipv4,address.ip,address.port);
     Block b(block,size);
-    server->PrepareSendTo(addr).Send(b,0);
+    server->ServerSender(addr).Send(b,0);
 }
 
 void free_ccio(ccio **cc)
@@ -111,14 +111,21 @@ void free_ccio(ccio **cc)
         delete reinterpret_cast<ccio_server*>((*cc)->context);
     }
     if ((*cc)->server != nullptr){
-        delete reinterpret_cast<Server*>((*cc)->server);
+        delete reinterpret_cast<ServerTest*>((*cc)->server);
     }
     free(*cc);
     *cc = nullptr;
 }
 
+
+void ccio_close(ccio_client *client)
+{
+    auto sender = reinterpret_cast<cc::ServerTest::Sender*>((client->context));
+    sender->Close();
+}
+
 void ccio_tcp_prepare_send(ccio **cc, int fd)
 {
-    auto server = reinterpret_cast<Server*>((*cc)->server);
+    auto server = reinterpret_cast<ServerTest*>((*cc)->server);
     server->PrepareSend(fd);
 }

@@ -11,13 +11,14 @@ namespace cc
 {
 
     class ServerDelegate;
-    class Server : protected Socket
+
+    class ServerTest : protected Socket
     {
     public:
-        class Client : protected Socket
+        class Sender : protected Socket
         {
         public:
-            Client(int fd, const Address &address, Protocol &protocol);
+            Sender(int fd, ServerTest &server, const Address &address, Protocol &protocol);
             int fd();
             ssize_t Send(const Block &, int flag);
             void Close();
@@ -25,24 +26,26 @@ namespace cc
         protected:
             Address m_address;
             Protocol m_proto;
+            ServerTest &m_server;
         };
 
     public:
-        Server(const Server &) = delete;
-        Server(const Server &&) = delete;
-        Server(AddressFamily af, SockType sock, Protocol proto);
-        ~Server();
+        ServerTest(const ServerTest &) = delete;
+        ServerTest(const ServerTest &&) = delete;
+        ServerTest(AddressFamily af, SockType sock, Protocol proto);
+        ~ServerTest();
         void SetDelegate(ServerDelegate *delegate);
 
         int Start(uint16_t port);
         void Stop();
         void WaitClose();
         void PrepareSend(int);
-        Client PrepareSendTo(Address &address);
+        Sender ServerSender(Address &to);
+        void RemoveSender(Sender &sender);
 
     private:
         bool m_is_running = false;
-        Pool *m_pool;
+        Pool *m_pool = nullptr;
         Poll m_poll;
         std::unordered_map<int, Address> m_map_client;
         void tcp_server_core_process(cc::ServerDelegate *delegate);
@@ -51,11 +54,13 @@ namespace cc
     class ServerDelegate
     {
     public:
-        virtual void onConnect(Server &server, Server::Client &fd, Address &address){};
-        virtual void onDisconnect(Server &server, Server::Client &fd, const Address &address, const char *msg){};
-        virtual void onRead(Server &server, Server::Client &fd, const Address &address, Block &block){};
-        virtual void onWrite(Server &server, Server::Client &fd, const Address &address){};
+        virtual void onConnect(ServerTest &server, ServerTest::Sender &fd, Address &address){};
+        virtual void onDisconnect(ServerTest &server, ServerTest::Sender &fd, const Address &address, const char *msg){};
+        virtual void onRead(ServerTest &server, ServerTest::Sender &fd, const Address &address, Block &block){};
+        virtual void onWrite(ServerTest &server, ServerTest::Sender &fd, const Address &address){};
     };
+
+    
 } // namespace cc
 
 #endif

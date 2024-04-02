@@ -26,7 +26,7 @@ namespace cc
         void removeFlag(int) const;
         int Close() const;
         static int Pipe(Stream& read,Stream& write);
-        int fd();
+        int fd() const;
     private:
         int m_fd;
     };

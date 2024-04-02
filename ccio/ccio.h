@@ -15,6 +15,7 @@ struct ccio_client
 {
     int fd;
     ccio_addr addr;
+    void *context;
 };
 
 struct ccio
@@ -40,9 +41,10 @@ void ccio_tcp_prepare_send(ccio **cc, int fd);
 
 void ccio_tcp_send(ccio_client *client, const void *data, size_t len);
 
-
 int ccio_udp_init(ccio **cc, uint16_t port, void *userData);
 
 void ccio_udp_send(ccio **cc, ccio_addr address,const void* block,size_t size);
+
+void ccio_close(ccio_client *client);
 
 #endif

@@ -11,38 +11,19 @@
 #include <sys/types.h>
 
 #include <sys/select.h>
-#include "main.h"
-#include "ccio.h"
-
-void m_onConnect(void* userdata,ccio* cc,ccio_client* client){
-    std::cout << "connect " << client->addr.ip << " " << client->addr.port << std::endl;
-    ccio_tcp_prepare_send(&cc,client->fd);
-}
-void m_onDisconnect(void* userdata,ccio* cc,ccio_client* client){
-    std::cout << "disconnect " << client->addr.ip << " " << client->addr.port << std::endl;
-}
-
-void m_onRecieve(void* userdata,ccio* cc,ccio_client* client,const void* data,size_t len){
-    char* c = (char*)malloc(len + 1);
-    memset(c,0,len + 1);
-    memcpy(c,data,len);
-    std::cout << "recieve " << client->addr.ip << " " << client->addr.port << std::endl << c << std::endl;
-    free(c);
-    ccio_udp_send(&cc,client->addr,"hello",5);
-    
-}void m_onWrite(void* userdata,ccio* cc,ccio_client* client){
-    std::cout << "write " << client->addr.ip << " " << client->addr.port << std::endl;
-    ccio_tcp_send(client,"hello",5);
-}
+#include "cc/connection.hpp"
+#include "cc/poll.hpp"
 
 
+
+// 192.168.84.45:180
 int main(){
-    ccio* c = create_ccio();
-    c->onConnect = m_onConnect;
-    c->onDisconnect = m_onDisconnect;
-    c->onRead = m_onRecieve;
-    c->onWrite = m_onWrite;
-    ccio_udp_init(&c,8080,nullptr);
-    ccio_wait(&c);
-    return 0;
+    auto ap = new cc::AsyncPoll();
+    auto c = new cc::Connection(cc::ipv4,cc::stream,cc::tcp);
+
+    cc::Address addr(cc::ipv4,"192.168.84.45",180);
+    c->SetPoll(*ap);
+    int a = c->setTarget(addr);
+    std::cout << a << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(200));
 }

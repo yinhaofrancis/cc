@@ -15,7 +15,7 @@ socket.cpp socket.hpp
 task.hpp task.cpp
 poll.cpp poll.hpp
 server.cpp server.hpp
-
+connection.hpp connection.cpp
 )
 
 if(APPLE)

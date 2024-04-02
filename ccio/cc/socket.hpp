@@ -49,14 +49,14 @@ namespace cc
     public:
         Socket(AddressFamily af,SockType st,Protocol proto);
         Socket(int fd);
-        ssize_t Send(const Block &, int flag);
-        ssize_t Recieve(Block &, int flag);
-        ssize_t SendTo(const Block &, const Address &address, int flag);
-        ssize_t RecvFrom(Block &, Address &address, int flag);
-        int Bind(Address &address);
-        int Listen(int backlog);
-        int Accept(Address &address);
-
+        ssize_t Send(const Block &, int flag) const;
+        ssize_t Recieve(Block &, int flag) const;
+        ssize_t SendTo(const Block &, const Address &address, int flag) const;
+        ssize_t RecvFrom(Block &, Address &address, int flag) const;
+        int Bind(Address &address) const;
+        int Listen(int backlog) const;
+        int Accept(Address &address) const;
+        int Connect(const Address &address) const;
         static Socket createTCP(AddressFamily af);
         static Socket createUDP(AddressFamily af);
     protected:

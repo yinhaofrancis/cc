@@ -11,41 +11,46 @@ cc::Socket::Socket(int fd):Stream(fd)
 {
 }
 
-ssize_t cc::Socket::Send(const Block &block, int flag)
+ssize_t cc::Socket::Send(const Block &block, int flag) const
 {
     return send(this->fd(), block.data(), block.size(), flag);
 }
 
-ssize_t cc::Socket::Recieve(Block &block, int flag)
+ssize_t cc::Socket::Recieve(Block &block, int flag) const
 {
     ssize_t siz = recv(fd(), const_cast<void *>(block.data()), block.size(), flag);
     block.m_size = siz;
     return siz;
 }
 
-ssize_t cc::Socket::SendTo(const Block &block, const Address &address, int flag)
+ssize_t cc::Socket::SendTo(const Block &block, const Address &address, int flag) const
 {
     return sendto(fd(), block.data(), block.size(), flag, address.m_address, address.m_size);
 }
 
-ssize_t cc::Socket::RecvFrom(Block &block, Address &address, int flag)
+ssize_t cc::Socket::RecvFrom(Block &block, Address &address, int flag) const
 {
     return recvfrom(fd(), const_cast<void *>(block.data()), block.size(), flag, address.m_address, &address.m_size);
 }
 
-int cc::Socket::Bind(Address &address)
+int cc::Socket::Bind(Address &address) const
 {
     return bind(fd(), address.m_address, address.m_size);
 }
 
-int cc::Socket::Listen(int backlog)
+int cc::Socket::Listen(int backlog) const
 {
     return listen(fd(), backlog);
 }
 
-int cc::Socket::Accept(Address &address)
+int cc::Socket::Accept(Address &address) const
 {
     return accept(fd(), address.m_address, &address.m_size);
+}
+
+int cc::Socket::Connect(const Address &address) const
+{
+    return connect(fd(), address.m_address, address.m_size);
 }
 
 cc::Socket cc::Socket::createTCP(AddressFamily af)

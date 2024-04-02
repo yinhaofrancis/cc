@@ -4,33 +4,35 @@
 const TimeInterval kDefaultTimeout = 0.1;
 const TimeInterval kDefaultReciecveSize = 1024;
 
-cc::Server::Server(AddressFamily af,SockType sock,Protocol proto) : Socket(af,sock, proto)
+cc::ServerTest::ServerTest(AddressFamily af, SockType sock, Protocol proto) : Socket(af, sock, proto)
 {
     m_pool = new Pool(0);
 }
 
-cc::Server::~Server()
+cc::ServerTest::~ServerTest()
 {
+    Socket::Close();
     this->m_is_running = false;
     delete this->m_pool;
 }
 
-void cc::Server::SetDelegate(ServerDelegate *delegate)
+void cc::ServerTest::SetDelegate(ServerDelegate *delegate)
 {
     this->m_pool->dispatch([this, delegate]()
                            {
-        this->m_is_running = true;
-        if(this->m_proto == cc::Protocol::tcp){
-            tcp_server_core_process(delegate);
-        }else if (this->m_proto == cc::Protocol::udp){
-            udp_server_core_process(delegate);
-        }
-        
-    });
+                               this->m_is_running = true;
+                               if (this->m_proto == cc::Protocol::tcp)
+                               {
+                                   tcp_server_core_process(delegate);
+                               }
+                               else if (this->m_proto == cc::Protocol::udp)
+                               {
+                                   udp_server_core_process(delegate);
+                               } });
 }
-void cc::Server::udp_server_core_process(cc::ServerDelegate *delegate)
+void cc::ServerTest::udp_server_core_process(cc::ServerDelegate *delegate)
 {
-    
+
     while (this->m_is_running)
     {
         std::vector<Poll::Result> m_result;
@@ -48,19 +50,19 @@ void cc::Server::udp_server_core_process(cc::ServerDelegate *delegate)
                 {
                     Address inAddress;
                     Block b(kDefaultReciecveSize);
-                    auto size = this->RecvFrom(b,inAddress,0);
-                    Client client(this->fd(),inAddress,m_proto);
+                    auto size = this->RecvFrom(b, inAddress, 0);
+                    Sender client(this->fd(), *this, inAddress, m_proto);
                     if (size == -1)
                     {
                         continue;
                     }
-                    delegate->onRead(*this,client,inAddress,b);
+                    delegate->onRead(*this, client, inAddress, b);
                 }
             }
         }
     }
 }
-void cc::Server::tcp_server_core_process(cc::ServerDelegate *delegate)
+void cc::ServerTest::tcp_server_core_process(cc::ServerDelegate *delegate)
 {
     while (this->m_is_running)
     {
@@ -85,7 +87,7 @@ void cc::Server::tcp_server_core_process(cc::ServerDelegate *delegate)
                         continue;
                     }
                     this->m_poll.add(client, cc::Poll::Event::IN);
-                    Client cclient(client, inAddress, this->m_proto);
+                    Sender cclient(client, *this, inAddress, this->m_proto);
                     delegate->onConnect(*this, cclient, inAddress);
                 }
                 else if (result.revents & cc::Poll::Event::IN)
@@ -94,7 +96,7 @@ void cc::Server::tcp_server_core_process(cc::ServerDelegate *delegate)
                     Socket read(result.fd);
                     Block block(kDefaultReciecveSize);
                     Address address = this->m_map_client[result.fd];
-                    Client client(result.fd, address, this->m_proto);
+                    Sender client(result.fd, *this, address, this->m_proto);
                     int c = read.Recieve(block, 0);
                     if (c > 0)
                     {
@@ -102,22 +104,21 @@ void cc::Server::tcp_server_core_process(cc::ServerDelegate *delegate)
                     }
                     else if (c == 0)
                     {
-                        m_map_client.erase(result.fd);
                         delegate->onDisconnect(*this, client, address, nullptr);
-                        client.Close();
+                        this->RemoveSender(client);
                     }
                     else if (c == -1)
                     {
-                        m_map_client.erase(result.fd);
+
                         delegate->onDisconnect(*this, client, address, strerror(errno));
-                        client.Close();
+                        this->RemoveSender(client);
                     }
                 }
                 else if (result.revents & cc::Poll::Event::OUT)
                 {
                     Address &address = this->m_map_client[result.fd];
                     this->m_poll.remove(result.fd, cc::Poll::Event::OUT);
-                    Client client(result.fd, address, this->m_proto);
+                    Sender client(result.fd, *this, address, this->m_proto);
                     delegate->onWrite(*this, client, address);
                 }
             }
@@ -125,56 +126,71 @@ void cc::Server::tcp_server_core_process(cc::ServerDelegate *delegate)
     }
 }
 
-int cc::Server::Start(uint16_t port)
+int cc::ServerTest::Start(uint16_t port)
 {
     int ret = 0;
     auto localhost = cc::Address(this->m_af, port);
     ret = this->Bind(localhost);
     ret = this->Listen(256);
-    this->m_poll.add(this->fd(),cc::Poll::Event::IN);   
-    return ret; 
+    this->m_poll.add(this->fd(), cc::Poll::Event::IN);
+    return ret;
 }
 
-void cc::Server::Stop()
+void cc::ServerTest::Stop()
 {
     this->m_is_running = false;
 }
 
-void cc::Server::WaitClose()
+void cc::ServerTest::WaitClose()
 {
     m_pool->Wait();
 }
 
-void cc::Server::PrepareSend(int clientfd)
+void cc::ServerTest::PrepareSend(int clientfd)
 {
     m_poll.add(clientfd, cc::Poll::Event::OUT);
 }
 
-cc::Server::Client cc::Server::PrepareSendTo(Address &address)
+cc::ServerTest::Sender cc::ServerTest::ServerSender(Address &address)
 {
-    return Client(this->fd(), address,m_proto);
+    return Sender(this->fd(), *this, address, m_proto);
 }
 
-cc::Server::Client::Client(int fd,const Address &address,Protocol &protocol) : Socket(fd),m_address(address),m_proto(protocol)
+void cc::ServerTest::RemoveSender(Sender &sender)
+{
+    if (m_proto == cc::tcp)
+    {
+        if (sender.fd() != this->fd())
+        {
+            m_map_client.erase(sender.fd());
+            m_poll.remove(sender.fd());
+        }
+    }
+}
+cc::ServerTest::Sender::Sender(int fd, ServerTest &server, const Address &address, Protocol &protocol) : Socket(fd), m_server(server), m_address(address), m_proto(protocol)
 {
     cc::Stream::addStatus(O_NONBLOCK);
 }
 
-int cc::Server::Client::fd()
+int cc::ServerTest::Sender::fd()
 {
     return cc::Stream::fd();
 }
 
-ssize_t cc::Server::Client::Send(const Block &block, int flag)
+ssize_t cc::ServerTest::Sender::Send(const Block &block, int flag)
 {
-    if(m_proto == cc::Protocol::tcp){
+    if (m_proto == cc::Protocol::tcp)
+    {
         return Socket::Send(block, flag);
-    }else{
+    }
+    else
+    {
         return Socket::SendTo(block, m_address, flag);
     }
 }
 
-void cc::Server::Client::Close()
+void cc::ServerTest::Sender::Close()
 {
+    m_server.RemoveSender(*this);
     Socket::Close();
 }
