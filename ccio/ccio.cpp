@@ -12,7 +12,7 @@ public:
     {
     }
 
-    virtual void onConnect(Server &server, Client &fd, Address &address)
+    virtual void onConnect(Server &server, Server::Client &fd, Address &address)
     {
         if(m_ccio->onConnect != nullptr){
             auto addr = address.ipAddress();
@@ -21,7 +21,7 @@ public:
             m_ccio->onConnect(m_ccio->userdata,m_ccio,&cl);
         }
     };
-    virtual void onDisconnect(Server &server, Client &fd, const Address &address, const char *msg)
+    virtual void onDisconnect(Server &server, Server::Client &fd, const Address &address, const char *msg)
     {
         if(m_ccio->onDisconnect != nullptr){
             auto addr = address.ipAddress();
@@ -30,7 +30,7 @@ public:
             m_ccio->onDisconnect(m_ccio->userdata,m_ccio,&cl);
         }
     };
-    virtual void onRead(Server &server, Client &fd, const Address &address, Block &block)
+    virtual void onRead(Server &server, Server::Client &fd, const Address &address, Block &block)
     {
         if(m_ccio->onRead != nullptr){
             auto addr = address.ipAddress();
@@ -39,7 +39,7 @@ public:
             m_ccio->onRead(m_ccio->userdata,m_ccio,&cl,block.data(),block.size());
         }
     };
-    virtual void onWrite(Server &server, Client &fd, const Address &address)
+    virtual void onWrite(Server &server, Server::Client &fd, const Address &address)
     {
         if(m_ccio->onWrite != nullptr){
             auto addr = address.ipAddress();

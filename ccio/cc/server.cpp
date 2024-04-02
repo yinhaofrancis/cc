@@ -150,22 +150,22 @@ void cc::Server::PrepareSend(int clientfd)
     m_poll.add(clientfd, cc::Poll::Event::OUT);
 }
 
-cc::Client cc::Server::PrepareSendTo(Address &address)
+cc::Server::Client cc::Server::PrepareSendTo(Address &address)
 {
     return Client(this->fd(), address,m_proto);
 }
 
-cc::Client::Client(int fd,const Address &address,Protocol &protocol) : Socket(fd),m_address(address),m_proto(protocol)
+cc::Server::Client::Client(int fd,const Address &address,Protocol &protocol) : Socket(fd),m_address(address),m_proto(protocol)
 {
     cc::Stream::addStatus(O_NONBLOCK);
 }
 
-int cc::Client::fd()
+int cc::Server::Client::fd()
 {
     return cc::Stream::fd();
 }
 
-ssize_t cc::Client::Send(const Block &block, int flag)
+ssize_t cc::Server::Client::Send(const Block &block, int flag)
 {
     if(m_proto == cc::Protocol::tcp){
         return Socket::Send(block, flag);
@@ -174,7 +174,7 @@ ssize_t cc::Client::Send(const Block &block, int flag)
     }
 }
 
-void cc::Client::Close()
+void cc::Server::Client::Close()
 {
     Socket::Close();
 }
