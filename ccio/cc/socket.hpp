@@ -26,18 +26,13 @@ namespace cc
         RcvBuf = SO_RCVBUF,
         KeepLive = SO_KEEPALIVE,
         OobInline = SO_OOBINLINE,
-        NoCheck = SO_NO_CHECK,
-        Priority = SO_PRIORITY,
         Linger = SO_LINGER,
-        BsdCompat = SO_BSDCOMPAT,
         ReusePort = SO_REUSEPORT,
-        PassCred = SO_PASSCRED,
-        PeerCred = SO_PEERCRED,
         RvcLowat = SO_RCVLOWAT,
         SndLowat = SO_SNDLOWAT,
         RcvTimeOut = SO_RCVTIMEO,
         SndTimeOut = SO_SNDTIMEO,
-        BindToDevice = SO_BINDTODEVICE,
+
     };
     enum Domain
     {
@@ -89,6 +84,10 @@ namespace cc
         SockType sockType() const;
         Protocol protocol() const;
         int error() const;
+    private:
+        Domain m_domain;
+        SockType m_socktype;
+        Protocol m_protocol;
     };
 
 } // namespace cc

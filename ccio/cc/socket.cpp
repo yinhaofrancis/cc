@@ -4,7 +4,7 @@
 
 
 cc::Socket::Socket(Domain domain, SockType st, Protocol proto)
-:Stream(socket(domain,st,proto))
+:Stream(socket(domain,st,proto)),m_protocol(proto),m_domain(domain),m_socktype(st)
 {}
 
 cc::Socket::Socket(int fd):Stream(fd)
@@ -73,10 +73,7 @@ cc::SockType cc::Socket::sockType() const
 
 cc::Protocol cc::Socket::protocol() const
 {
-    int value = -9;
-    socklen_t size;
-    getsockopt(fd(),SOL_SOCKET,SO_PROTOCOL,&value,&size);
-    return cc::Protocol(value);
+    return m_protocol;
 }
 
 int cc::Socket::error() const
@@ -89,10 +86,7 @@ int cc::Socket::error() const
 
 cc::Domain cc::Socket::domain() const
 {
-    int value = 0;
-    socklen_t size;
-    getsockopt(fd(),SOL_SOCKET,SO_DOMAIN,&value,&size);
-    return cc::Domain(value);
+    return m_domain;
 }
 
 cc::Domain cc::Address::family() const
