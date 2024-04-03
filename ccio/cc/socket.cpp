@@ -65,10 +65,7 @@ cc::Socket cc::Socket::createUDP(Domain domain)
 
 cc::SockType cc::Socket::sockType() const
 {
-    int value = 0;
-    socklen_t size;
-    getsockopt(fd(),SOL_SOCKET,SO_TYPE,&value,&size);
-    return cc::SockType(value);
+    return m_socktype;
 }
 
 cc::Protocol cc::Socket::protocol() const
