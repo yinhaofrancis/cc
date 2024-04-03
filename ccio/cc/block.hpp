@@ -14,8 +14,8 @@ namespace cc
         const size_t size() const;
         void append(const Block&);
         void assign(const void* buffer,const size_t size);
-        std::string str();
-        const char* c_str();
+        std::string str() const;
+        const char* c_str() const;
         friend class Stream;
         friend class Socket;
     private:

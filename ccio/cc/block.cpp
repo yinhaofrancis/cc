@@ -47,12 +47,12 @@ void cc::Block::assign(const void *buffer, const size_t size)
     std::memcpy(m_block,buffer,std::min(size,m_size));
 }
 
-std::string cc::Block::str()
+std::string cc::Block::str() const
 {
     return c_str();
 }
 
-const char *cc::Block::c_str()
+const char *cc::Block::c_str() const 
 {
     return static_cast<const char*>(m_block);
 }
