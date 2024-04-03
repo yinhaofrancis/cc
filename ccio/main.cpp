@@ -31,6 +31,7 @@ public:
     }
     virtual void OnConnect(cc::TcpServer& server,cc::Sender& sender) {
         std::cout << sender.address().ipAddress() << " connect"<< std::endl;
+        sender.Send(cc::Block("hello"));
     }
     virtual void OnDisconnect(cc::TcpServer& server,cc::Sender& sender) {
         std::cout << sender.address().ipAddress() << " disconnect"<< std::endl;

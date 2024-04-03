@@ -53,7 +53,7 @@ cc::Address cc::Sender::address() const
 
 int cc::Sender::fd() const
 {
-    return fd();
+    return Socket::fd();
 }
 
 cc::UdpServer::UdpServer(AddressFamily af) : Socket(af, cc::dgram, cc::udp)
@@ -142,9 +142,11 @@ void cc::TcpServer::Close()
 
 void cc::TcpServer::Prepare(int senderfd)
 {
+    m_mutex.lock();
     auto it = std::find_if(m_map_client.begin(), m_map_client.end(), [&](auto &i)
                            { return i.second.fd() == senderfd; });
     m_poll.add((*it).second.fd(), cc::Poll::OUT);
+    m_mutex.unlock();
 }
 
 void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
@@ -152,7 +154,9 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
     this->m_is_running = true;
     m_loop.dispatch([this, reciever]()
                     {
+        m_mutex.lock();
         this->m_poll.add(fd(),cc::Poll::IN);
+        m_mutex.unlock();
         while (this->m_is_running)
         {
             std::vector<Poll::Result> events;
@@ -168,50 +172,68 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                         if (i.revents & cc::Poll::IN){
                             Address addr;
                             int fd = Socket::Accept(addr);
+                            if(fd < 0){
+                                continue;
+                            }
                             Sender s(fd,m_af,m_st,m_proto,addr);
+                            m_mutex.lock();
                             this->m_map_client[fd] = s;
                             m_poll.add(fd,cc::Poll::IN);
+                            m_mutex.unlock();
                             reciever->OnConnect(*this,s);
                         }
                     }else {
                         if(i.revents & cc::Poll::IN){
                             Block b(2048);
                             Socket(i.fd).Recieve(b,0);
+                            m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
                             if(b.size() == 0){
                                 this->m_map_client.erase(i.fd);
+                                m_mutex.unlock();
                                 reciever->OnDisconnect(*this,s);
+                                m_mutex.lock();
                                 m_poll.remove(i.fd);
                                 s.Close();
                             }else{
+                                m_mutex.unlock();
                                 reciever->onRecieve(*this,s,b);
+                                 m_mutex.lock();
                             }
+                            m_mutex.unlock();
                         }
                         if(i.revents & cc::Poll::ERR){
+                            m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
                             this->m_map_client.erase(i.fd);
-                            reciever->onError(*this,s,strerror(errno));
                             s.Close();
                             m_poll.remove(i.fd);
+                            m_mutex.unlock();
+                            reciever->onError(*this,s,strerror(errno));
                         }
                         if(i.revents & cc::Poll::HUP){
+                            m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
                             this->m_map_client.erase(i.fd);
-                            reciever->onError(*this,s,strerror(errno));
                             s.Close();
                             m_poll.remove(i.fd);
+                            m_mutex.unlock();
+                            reciever->onError(*this,s,strerror(errno));
                         }
                         if(i.revents & cc::Poll::NVAL){
+                            m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
                             this->m_map_client.erase(i.fd);
-                            reciever->onError(*this,s,strerror(errno));
                             s.Close();
                             m_poll.remove(i.fd);
+                            m_mutex.unlock();
+                            reciever->onError(*this,s,strerror(errno));
                         }
                         if(i.revents & cc::Poll::OUT){
                             Sender s = this->m_map_client[i.fd];
                             reciever->onSend(*this,s);
                             m_poll.remove(i.fd,cc::Poll::OUT);
+                            reciever->onError(*this,s,strerror(errno));
                         }
                     }
                 }
