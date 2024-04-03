@@ -53,6 +53,11 @@ int cc::Socket::Connect(const Address &address) const
     return connect(fd(), address.m_address, address.m_size);
 }
 
+cc::AddressFamily cc::Socket::af()
+{
+    return m_af; 
+}
+
 cc::Socket cc::Socket::createTCP(AddressFamily af)
 {
     return Socket(af,stream,tcp);

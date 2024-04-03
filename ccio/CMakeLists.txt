@@ -8,11 +8,11 @@ add_subdirectory(cc)
 add_executable(ccio
 main.cpp
 )
-add_library(cciolib 
-ccio.h ccio.cpp
-)
+# add_library(cciolib 
+# ccio.h ccio.cpp
+# )
 
 
-target_link_libraries(ccio cc ccm cciolib)
+target_link_libraries(ccio cc ccm)
 
 

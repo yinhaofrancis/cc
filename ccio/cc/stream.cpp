@@ -25,6 +25,25 @@ ssize_t cc::Stream::Write(Block & block) const
     return write(m_fd,block.data(),block.size());
 }
 
+ssize_t cc::Stream::Read(std::vector<Block> & blocks) const
+{
+    ssize_t size = 0;
+    ssize_t current = 0;
+    do{
+        Block b(1024);
+        current = Read(b);
+        if (current > 0){
+            blocks.push_back(b);
+        }
+        if (current < 0 && errno == EAGAIN){
+            return size;
+        }else {
+            return -1;
+        }
+    }while(current < 0);
+    return size;
+}
+
 ssize_t cc::Stream::Read(Block &block) const
 {
 

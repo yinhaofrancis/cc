@@ -57,8 +57,10 @@ namespace cc
         int Listen(int backlog) const;
         int Accept(Address &address) const;
         int Connect(const Address &address) const;
+        AddressFamily af(); 
         static Socket createTCP(AddressFamily af);
         static Socket createUDP(AddressFamily af);
+
     protected:
         AddressFamily m_af;
         SockType m_st;

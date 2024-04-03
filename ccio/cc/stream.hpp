@@ -15,7 +15,9 @@ namespace cc
         int Open(const char* path,int flag);
         int Open(const char *path, int flag,mode_t mode);
         ssize_t Write(Block &) const;
+        ssize_t Read( std::vector<Block>&) const;
         ssize_t Read(Block &) const;
+        
         int Status() const;
         void setStatus(int) const;
         void addStatus(int) const;
