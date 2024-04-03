@@ -180,7 +180,7 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             this->m_map_client[fd] = s;
                             m_poll.add(fd,cc::Poll::IN);
                             m_mutex.unlock();
-                            reciever->OnConnect(*this,s);
+                            reciever->onConnect(*this,s);
                         }
                     }else {
                         if(i.revents & cc::Poll::IN){
@@ -191,7 +191,7 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             if(b.size() == 0){
                                 this->m_map_client.erase(i.fd);
                                 m_mutex.unlock();
-                                reciever->OnDisconnect(*this,s);
+                                reciever->onDisconnect(*this,s);
                                 m_mutex.lock();
                                 m_poll.remove(i.fd);
                                 s.Close();

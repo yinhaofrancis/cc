@@ -29,11 +29,11 @@ public:
         cc::Block b("hello");
         sender.Send(b);
     }
-    virtual void OnConnect(cc::TcpServer& server,cc::Sender& sender) {
+    virtual void onConnect(cc::TcpServer& server,cc::Sender& sender) {
         std::cout << sender.address().ipAddress() << " connect"<< std::endl;
         sender.Send(cc::Block("hello"));
     }
-    virtual void OnDisconnect(cc::TcpServer& server,cc::Sender& sender) {
+    virtual void onDisconnect(cc::TcpServer& server,cc::Sender& sender) {
         std::cout << sender.address().ipAddress() << " disconnect"<< std::endl;
     }
     virtual void onRecieve(cc::TcpServer &server,cc::Sender& sender,const cc::Block& block) {
