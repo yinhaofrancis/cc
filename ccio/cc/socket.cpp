@@ -3,8 +3,8 @@
 #include <string>
 
 
-cc::Socket::Socket(AddressFamily af, SockType st, Protocol proto)
-:Stream(socket(af,st,proto)),m_af(af),m_st(st),m_proto(proto)
+cc::Socket::Socket(Domain domain, SockType st, Protocol proto)
+:Stream(socket(domain,st,proto))
 {}
 
 cc::Socket::Socket(int fd):Stream(fd)
@@ -53,24 +53,51 @@ int cc::Socket::Connect(const Address &address) const
     return connect(fd(), address.m_address, address.m_size);
 }
 
-cc::AddressFamily cc::Socket::af()
+cc::Socket cc::Socket::createTCP(Domain domain)
 {
-    return m_af; 
+    return Socket(domain,stream,tcp);
 }
 
-cc::Socket cc::Socket::createTCP(AddressFamily af)
+cc::Socket cc::Socket::createUDP(Domain domain)
 {
-    return Socket(af,stream,tcp);
+    return Socket(domain,dgram,udp);
 }
 
-cc::Socket cc::Socket::createUDP(AddressFamily af)
+cc::SockType cc::Socket::sockType() const
 {
-    return Socket(af,dgram,udp);
+    int value = 0;
+    socklen_t size;
+    getsockopt(fd(),SOL_SOCKET,SO_TYPE,&value,&size);
+    return cc::SockType(value);
 }
 
-cc::AddressFamily cc::Address::family() const
+cc::Protocol cc::Socket::protocol() const
 {
-    return (AddressFamily)m_address->sa_family;
+    int value = -9;
+    socklen_t size;
+    getsockopt(fd(),SOL_SOCKET,SO_PROTOCOL,&value,&size);
+    return cc::Protocol(value);
+}
+
+int cc::Socket::error() const
+{
+    int value = 0;
+    socklen_t size;
+    getsockopt(fd(),SOL_SOCKET,SO_ERROR,&value,&size);
+    return value;
+}
+
+cc::Domain cc::Socket::domain() const
+{
+    int value = 0;
+    socklen_t size;
+    getsockopt(fd(),SOL_SOCKET,SO_DOMAIN,&value,&size);
+    return cc::Domain(value);
+}
+
+cc::Domain cc::Address::family() const
+{
+    return (Domain)m_address->sa_family;
 }
 
 uint16_t cc::Address::port() const
@@ -84,23 +111,23 @@ uint16_t cc::Address::port() const
     }
 }
 
-cc::Address::Address(AddressFamily af, const char *ip, uint16_t port)
+cc::Address::Address(Domain domain, const char *ip, uint16_t port)
 {
-    modifyAddress(af, ip, port);
+    modifyAddress(domain, ip, port);
 
 }
 
-void cc::Address::modifyAddress(AddressFamily af, const char *ip, uint16_t port)
+void cc::Address::modifyAddress(Domain domain, const char *ip, uint16_t port)
 {
     uint16_t nPort = htons(port);
-    switch (af)
+    switch (domain)
     {
     case ipv4:
     {
         in_addr address;
-        inet_pton(af, ip, &address);
+        inet_pton(domain, ip, &address);
         sockaddr_in saddr;
-        saddr.sin_family = af;
+        saddr.sin_family = domain;
         saddr.sin_port = nPort;
         saddr.sin_addr = address;
         m_size = sizeof(sockaddr_in);
@@ -114,10 +141,10 @@ void cc::Address::modifyAddress(AddressFamily af, const char *ip, uint16_t port)
     default:
     {
         in6_addr address;
-        inet_pton(af, ip, &address);
+        inet_pton(domain, ip, &address);
         sockaddr_in6 saddr;
         saddr.sin6_addr = address;
-        saddr.sin6_family = af;
+        saddr.sin6_family = domain;
         saddr.sin6_port = nPort;
         saddr.sin6_flowinfo = 0;
         saddr.sin6_scope_id = 0;
@@ -137,15 +164,15 @@ void cc::Address::modifyAddress(AddressFamily af, const char *ip, uint16_t port)
     });
 }
 
-cc::Address::Address(AddressFamily af, uint16_t port)
+cc::Address::Address(Domain domain, uint16_t port)
 {
-    switch (af)
+    switch (domain)
     {
     case ipv4:
-        modifyAddress(af,"0.0.0.0",port);
+        modifyAddress(domain,"0.0.0.0",port);
         break;
     case ipv6:
-        modifyAddress(af,"::",port);
+        modifyAddress(domain,"::",port);
     }
     
 }

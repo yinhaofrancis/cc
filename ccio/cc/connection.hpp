@@ -22,7 +22,7 @@ namespace cc
         };
 
     public:
-        Connection(AddressFamily af, SockType sock, Protocol proto);
+        Connection(Domain af, SockType sock, Protocol proto);
         Connection(const Connection &) = delete;
         Connection(const Connection &&) = delete;
         int setTarget(const Address &address);

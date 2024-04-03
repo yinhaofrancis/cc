@@ -1,5 +1,8 @@
 #include "poll.hpp"
 #include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 
 cc::Poll::~Poll()
 {

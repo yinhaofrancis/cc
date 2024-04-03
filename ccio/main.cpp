@@ -58,7 +58,12 @@ public:
 int main()
 {
 
-    cc::TcpServer us(cc::AddressFamily::ipv4);
+    cc::TcpServer us(cc::Domain::ipv4);
+    auto e = us.error();
+    auto d = us.domain();
+    auto s = us.sockType();
+    auto p = us.protocol();
+    std::cout << d << s << p << std::endl;
     us.SetReciever(new Skeleton());
     int ret = us.Listen(8080);
     if(ret){

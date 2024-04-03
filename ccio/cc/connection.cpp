@@ -1,6 +1,6 @@
 #include "connection.hpp"
 
-cc::Connection::Connection(AddressFamily af, SockType sock, Protocol proto):Socket(af,sock,proto)
+cc::Connection::Connection(Domain af, SockType sock, Protocol proto):Socket(af,sock,proto)
 {
 
 }

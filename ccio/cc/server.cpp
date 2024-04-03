@@ -2,26 +2,27 @@
 #include "stream.hpp"
 #include "block.hpp"
 #include "poll.hpp"
+
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+
 const TimeInterval kDefaultTimeout = 0.1;
 const TimeInterval kDefaultReciecveSize = 2048;
 
 cc::Sender::Sender(
     int fd,
-    AddressFamily af,
+    Domain domain,
     SockType st,
     Protocol proto,
     Address &address) : Socket(fd), m_address(address)
-{
-    m_af = af;
-    m_st = st;
-    m_proto = proto;
-}
+{}
 
 cc::Sender::Sender(
-    AddressFamily af,
+    Domain domain,
     SockType st,
     Protocol proto,
-    Address &address) : Socket(af, st, proto), m_address(address)
+    Address &address) : Socket(domain, st, proto), m_address(address)
 {
 }
 
@@ -36,7 +37,7 @@ void cc::Sender::Close() const
 
 int cc::Sender::Send(const Block &block) const
 {
-    if (m_proto == cc::tcp)
+    if (this->protocol() == cc::tcp)
     {
         return Socket::Send(block, 0);
     }
@@ -56,14 +57,14 @@ int cc::Sender::fd() const
     return Socket::fd();
 }
 
-cc::UdpServer::UdpServer(AddressFamily af) : Socket(af, cc::dgram, cc::udp)
+cc::UdpServer::UdpServer(Domain domain) : Socket(domain, cc::dgram, cc::udp)
 {
     Stream::addStatus(O_NONBLOCK);
 }
 
 int cc::UdpServer::Listen(uint16_t port)
 {
-    Address b(m_af, port);
+    Address b(domain(), port);
     return Socket::Bind(b);
 }
 
@@ -98,7 +99,7 @@ void cc::UdpServer::SetReciever(UdpServerReciever *reciever)
                         m_mutex.lock();
                         for (auto &&i : this->m_addresses)
                         {
-                            Sender s(m_af,m_st,m_proto,i);
+                            Sender s(domain(),sockType(),protocol(),i);
                             m_mutex.unlock();
                             reciever->onSend(*this,s);
                              m_mutex.lock();
@@ -120,13 +121,13 @@ void cc::UdpServer::PrepareSender(Address &addre)
     m_mutex.unlock();
 }
 
-cc::TcpServer::TcpServer(AddressFamily a) : Socket(a, cc::stream, cc::tcp)
+cc::TcpServer::TcpServer(Domain a) : Socket(a, cc::stream, cc::tcp)
 {
 }
 
 int cc::TcpServer::Listen(uint16_t port)
 {
-    Address b(m_af, port);
+    Address b(domain(), port);
     int ret = Socket::Bind(b);
     if (ret < 0)
     {
@@ -175,7 +176,7 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             if(fd < 0){
                                 continue;
                             }
-                            Sender s(fd,m_af,m_st,m_proto,addr);
+                            Sender s(fd,domain(),sockType(),protocol(),addr);
                             m_mutex.lock();
                             this->m_map_client[fd] = s;
                             m_poll.add(fd,cc::Poll::IN);

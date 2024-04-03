@@ -12,8 +12,8 @@ namespace cc
     class Sender : private Socket
     {
     public:
-        Sender(int fd, AddressFamily af, SockType st, Protocol proto, Address &address);
-        Sender(AddressFamily af, SockType st, Protocol proto, Address &address);
+        Sender(int fd, Domain domain, SockType st, Protocol proto, Address &address);
+        Sender(Domain domain, SockType st, Protocol proto, Address &address);
         Sender();
         void Close() const;
         int Send(const Block &block) const;
@@ -34,7 +34,7 @@ namespace cc
     class UdpServer : private Socket
     {
     public:
-        UdpServer(AddressFamily af);
+        UdpServer(Domain domain);
         UdpServer(const UdpServer&) = delete;
         UdpServer(const UdpServer&&) = delete;
         int Listen(uint16_t port);
@@ -62,7 +62,7 @@ namespace cc
 
     class TcpServer:public Socket{
     public:
-        TcpServer(AddressFamily a);
+        TcpServer(Domain a);
         TcpServer(const TcpServer &) = delete;
         TcpServer(const TcpServer &&) = delete;
         int Listen(uint16_t port);
