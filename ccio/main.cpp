@@ -31,7 +31,6 @@ public:
     }
     virtual void onConnect(cc::TcpServer& server,cc::Sender& sender) {
         std::cout << sender.address().ipAddress() << " connect"<< std::endl;
-        sender.Send(cc::Block("hello"));
     }
     virtual void onDisconnect(cc::TcpServer& server,cc::Sender& sender) {
         std::cout << sender.address().ipAddress() << " disconnect"<< std::endl;
@@ -42,13 +41,20 @@ public:
     }
     virtual void onSend(cc::TcpServer &server,cc::Sender &sender) {
         std::cout << sender.address().ipAddress() << " send someting" << std::endl;
-        sender.Send(cc::Block("I Recieved something"));
+
+        std::string content = "\r\n\r\n<a href=\"http://localhost:8080/\">abc</a>";
+        std::string str = "HTTP/1.1 200 0K \r\n";
+        str += "Content-Type: text/html; charset=utf-8 \r\n";
+        str += "Content-Length:" + std::to_string(content.size());
+        str += content;
+
+        sender.Send(cc::Block(str));
     }
     virtual void onError(cc::TcpServer &server,cc::Sender& sender,const char* errmsg) {
         std::cout << sender.address().ipAddress() << " " << errmsg << std::endl;
     }
 };
-// 192.168.84.45:180
+
 int main()
 {
 

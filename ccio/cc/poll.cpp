@@ -50,8 +50,11 @@ void cc::Poll::remove(int fd, Event event)
 }
 void cc::Poll::remove(int fd)
 {
-    m_pfd->erase(std::find_if(m_pfd->begin(), m_pfd->end(), [fd](pollfd &pfd)
-                             { return pfd.fd == fd; }));
+    auto it = std::find_if(m_pfd->begin(), m_pfd->end(), [fd](pollfd &pfd)
+                             { return pfd.fd == fd; });
+    if(it != m_pfd->end()){
+        m_pfd->erase(it);
+    }
 }
 cc::Poll::Poll()
 {

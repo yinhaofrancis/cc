@@ -233,7 +233,6 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             Sender s = this->m_map_client[i.fd];
                             reciever->onSend(*this,s);
                             m_poll.remove(i.fd,cc::Poll::OUT);
-                            reciever->onError(*this,s,strerror(errno));
                         }
                     }
                 }
