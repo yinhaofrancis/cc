@@ -53,8 +53,8 @@ namespace cc
 
     class TcpServerReciever{
     public:
-        virtual void OnConnect(TcpServer& server,Sender& sender) {}
-        virtual void OnDisconnect(TcpServer& server,Sender& sender) {}
+        virtual void onConnect(TcpServer& server,Sender& sender) {}
+        virtual void onDisconnect(TcpServer& server,Sender& sender) {}
         virtual void onRecieve(TcpServer &server,Sender& sender,const Block& block) {}
         virtual void onSend(TcpServer &server,Sender &sender) {}
         virtual void onError(TcpServer &server,Sender& sender,const char* errmsg) {}
