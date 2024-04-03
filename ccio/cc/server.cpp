@@ -60,6 +60,8 @@ int cc::Sender::fd() const
 cc::UdpServer::UdpServer(Domain domain) : Socket(domain, cc::dgram, cc::udp)
 {
     Stream::addStatus(O_NONBLOCK);
+    this->setReusePort(true);
+    this->setReuseAddr(true);
 }
 
 int cc::UdpServer::Listen(uint16_t port)
@@ -123,6 +125,8 @@ void cc::UdpServer::PrepareSender(Address &addre)
 
 cc::TcpServer::TcpServer(Domain a) : Socket(a, cc::stream, cc::tcp)
 {
+    this->setReusePort(true);
+    this->setReuseAddr(true);
 }
 
 int cc::TcpServer::Listen(uint16_t port)
@@ -177,6 +181,7 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                                 continue;
                             }
                             Sender s(fd,domain(),sockType(),protocol(),addr);
+                            Stream(fd).addStatus(O_NONBLOCK);
                             m_mutex.lock();
                             this->m_map_client[fd] = s;
                             m_poll.add(fd,cc::Poll::IN);

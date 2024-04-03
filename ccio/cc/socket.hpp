@@ -83,7 +83,12 @@ namespace cc
         static Socket createUDP(Domain domain);
         SockType sockType() const;
         Protocol protocol() const;
+        void setSockOptSockLevelInt(SocketOption so,int flag);
+        int  getSockOptSockLevelInt(SocketOption so);
         int error() const;
+        void setReuseAddr(bool flag);
+        void setReusePort(bool flag);
+        void setBroadCast(bool flag);
     private:
         Domain m_domain;
         SockType m_socktype;

@@ -73,12 +73,41 @@ cc::Protocol cc::Socket::protocol() const
     return m_protocol;
 }
 
+void cc::Socket::setSockOptSockLevelInt(SocketOption so, int flag)
+{
+    socklen_t size;
+    setsockopt(fd(),SOL_SOCKET,so,&flag,sizeof(int));
+}
+
+int cc::Socket::getSockOptSockLevelInt(SocketOption so)
+{
+    int value = 0;
+    socklen_t size;
+    getsockopt(fd(),SOL_SOCKET,so,&value,&size);
+    return value;
+}
+
 int cc::Socket::error() const
 {
     int value = 0;
     socklen_t size;
     getsockopt(fd(),SOL_SOCKET,SO_ERROR,&value,&size);
     return value;
+}
+
+void cc::Socket::setReuseAddr(bool flag)
+{
+    setSockOptSockLevelInt(ReuseAddr,flag);
+}
+
+void cc::Socket::setReusePort(bool flag)
+{
+    setSockOptSockLevelInt(ReusePort,flag);
+}
+
+void cc::Socket::setBroadCast(bool flag)
+{
+    setSockOptSockLevelInt(BroadCast,flag);
 }
 
 cc::Domain cc::Socket::domain() const
