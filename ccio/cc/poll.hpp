@@ -40,6 +40,7 @@ namespace cc
         void remove(int fd,Event event);
         void remove(int fd);
     private:
+        std::mutex m_lock;
         std::vector<pollfd> *m_pfd;
     };
     class AsyncPoll:protected Poll {
@@ -57,7 +58,7 @@ namespace cc
         void remove(int fd,Event event);
         void remove(int fd);
     private:
-        std::mutex m_lock;
+        
         std::unordered_map<int,AsyncPollCallback*> m_handle;
         Loop *m_loop;
         bool m_is_running;

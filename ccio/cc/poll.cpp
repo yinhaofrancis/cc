@@ -21,6 +21,7 @@ int cc::Poll::wait(TimeInterval time,std::vector<Result>& pfds) const
                 r.fd = i.fd;
                 r.events = static_cast<cc::Poll::Event>(i.events);
                 r.revents = static_cast<cc::Poll::Event>(i.revents);
+                
                 pfds.push_back(r);
                 short *s = &i.revents;
                 *s = 0;
@@ -33,6 +34,7 @@ int cc::Poll::wait(TimeInterval time,std::vector<Result>& pfds) const
 
 void cc::Poll::add(int fd, Event event)
 {
+    m_lock.lock();
     auto iidex = std::find_if(m_pfd->begin(),m_pfd->end(),[fd](pollfd& i){return i.fd == fd;});
 
     if(iidex != m_pfd->end()){
@@ -40,24 +42,28 @@ void cc::Poll::add(int fd, Event event)
     }else{
         m_pfd->push_back((pollfd){fd, (short)event, 0});
     }
-    
+    m_lock.unlock();
 }
 
 void cc::Poll::remove(int fd, Event event)
 {
+    m_lock.lock();
     auto iidex = std::find_if(m_pfd->begin(),m_pfd->end(),[fd](pollfd& i){return i.fd == fd;});
 
     if(iidex != m_pfd->end()){
         iidex->events &= ~event;
     }
+    m_lock.unlock();
 }
 void cc::Poll::remove(int fd)
 {
+    m_lock.lock();
     auto it = std::find_if(m_pfd->begin(), m_pfd->end(), [fd](pollfd &pfd)
                              { return pfd.fd == fd; });
     if(it != m_pfd->end()){
         m_pfd->erase(it);
     }
+    m_lock.unlock();
 }
 cc::Poll::Poll()
 {
@@ -101,24 +107,20 @@ cc::AsyncPoll::~AsyncPoll()
 
 void cc::AsyncPoll::add(int fd, Event event, AsyncPollCallback *c)
 {
-    m_lock.lock();
+
     Poll::add(fd,event);
     m_handle[fd] = c;
-    m_lock.unlock();
+
 }
 
 void cc::AsyncPoll::remove(int fd, Event event)
 {
-    m_lock.lock();
     Poll::remove(fd,event);
-    m_lock.unlock();
 }
 void cc::AsyncPoll::remove(int fd)
 {
-    m_lock.lock();
     Poll::remove(fd);
     m_handle.erase(fd);
-    m_lock.unlock();
 }
 
 void cc::AsyncPoll::AsyncPollCallback::onEvent(AsyncPoll &poll, Result &)

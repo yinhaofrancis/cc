@@ -23,13 +23,7 @@ class Skeleton : public cc::UdpServer::Reciever, public cc::TcpServer::Reciever,
 public:
     virtual void onRecieve(cc::UdpServer &server, cc::Address &addre, const cc::Block &block)
     {
-        server.PrepareSender(addre);
-    }
-    virtual void onSend(cc::UdpServer &server, cc::Sender &sender)
-    {
-        cc::Block b("hello");
-        sender.Send(b);
-        b.Free();
+        std::cout << block.c_str() << std::endl;
     }
     virtual void onConnect(cc::TcpServer &server, cc::Sender &sender)
     {
@@ -51,18 +45,15 @@ public:
         str += "Content-Length:" + std::to_string(content.size());
         str += content;
         cc::Block b(str);
-        server.Prepare(sender.fd(),b);
+        server.Prepare(sender.fd(), b);
         b.Free();
-    }
-    virtual void onSend(cc::TcpServer &server, cc::Sender &sender)
-    {
-       
     }
     virtual void onError(cc::TcpServer &server, cc::Sender &sender, const char *errmsg)
     {
         std::cout << sender.address().ipAddress() << " " << errmsg << std::endl;
     }
-    virtual void onRead(const cc::Connection& connect, cc::Block &block){
+    virtual void onRead(const cc::Connection &connect, cc::Block &block)
+    {
         std::cout << block.c_str() << std::endl;
     };
 };
@@ -70,25 +61,39 @@ public:
 int main()
 {
 
-    cc::TcpServer us(cc::Domain::ipv4);
+    // cc::TcpServer us(cc::Domain::ipv4);
+    Skeleton *skk = new Skeleton();
+    // us.SetReciever(skk);
+    // int ret = us.Listen(8080);
+    // if (ret)
+    // {
+    //     std::cout << strerror(errno) << std::endl;
+    // }
+    // std::this_thread::sleep_for(std::chrono::seconds(1));
+    // cc::Address addr(cc::ipv4, "192.168.2.101", 8080);
+    // cc::Connection cn(cc::ipv4, cc::stream, cc::tcp, addr);
+    // cn.SetDelegate(new Skeleton());
+    // for (size_t i = 0; i < 10; i++)
+    // {
+    //     cc::Block b(std::to_string(i));
+    //     cn.Send(b);
+    //     b.Free();
+    //     std::this_thread::sleep_for(std::chrono::seconds(1));
+    // }
+    // cn.Close();
 
-    us.SetReciever(new Skeleton());
-    int ret = us.Listen(8080);
-    if (ret)
-    {
-        std::cout << strerror(errno) << std::endl;
-    }
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    cc::Address addr(cc::ipv4, "192.168.2.101", 8080);
-    cc::Connection cn(cc::ipv4, cc::stream, cc::tcp, addr);
-    cn.SetDelegate(new Skeleton());
-    for (size_t i = 0; i < 100; i++)
-    {
-        cc::Block b(std::to_string(i));
-        cn.Send(b);
-        b.Free();
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
-    cn.Close();
+    cc::UdpServer cus(cc::ipv4);
+    int ret = cus.Listen(9091);
+    cus.SetReciever(skk);
+    std::cout << ret <<std::endl;
+    // for (size_t i = 0; i < 10000; i++)
+    // {
+    //     cc::Block b(std::to_string(i));
+    //     cc::Address addr(cc::ipv4, "192.168.2.101", 9090);
+    //     cus.Send(addr,b);
+    //     b.Free();
+    //     std::this_thread::sleep_for(std::chrono::seconds(1));
+    // }
+    std::this_thread::sleep_for(std::chrono::seconds(1000));
     return 0;
 }

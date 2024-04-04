@@ -25,14 +25,13 @@ namespace cc
     };
     class UdpServer;
 
-    class UdpServer : private Socket
+    class UdpServer : protected Socket
     {
     public:
         class Reciever
         {
         public:
             virtual void onRecieve(UdpServer &server, Address &addre, const Block &block) {}
-            virtual void onSend(UdpServer &server, Sender &sender) {}
         };
 
     public:
@@ -42,19 +41,26 @@ namespace cc
         int Listen(uint16_t port);
         void Close();
         void SetReciever(Reciever *reciever);
-        void PrepareSender(Address &addre);
+        void Send(Address &addre,const Block&);
 
     private:
+        struct Message{
+            Address addre;
+            Block block;
+            Message();
+        };
+        void udpLoop();
+        Reciever *m_reciever = nullptr;
         Loop m_loop;
         Poll m_poll;
         std::mutex m_mutex;
         bool m_is_running = false;
-        std::vector<Address> m_addresses;
+        std::vector<Message> m_message;
     };
 
     class TcpServer;
 
-    class TcpServer : public Socket
+    class TcpServer : protected Socket
     {
     public:
         class Reciever

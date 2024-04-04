@@ -82,10 +82,11 @@ void cc::UdpServer::SetReciever(UdpServer::Reciever *reciever)
     m_loop.dispatch([this, reciever]()
                     {
         this->m_poll.add(fd(),cc::Poll::IN);
+        this->m_poll.add(fd(),cc::Poll::OUT);
         while (this->m_is_running)
         {
             std::vector<Poll::Result> events;
-            int ret = this->m_poll.wait(20,events);
+            int ret = this->m_poll.wait(0.1,events);
             if (!this->m_is_running)
             {
                 return;
@@ -98,16 +99,22 @@ void cc::UdpServer::SetReciever(UdpServer::Reciever *reciever)
                         Block buffer(kDefaultReciecveSize);
                         Socket::RecvFrom(buffer,addr,0);
                         reciever->onRecieve(*this,addr,buffer);
+                        buffer.Free();
                     }else if(i.revents & cc::Poll::OUT) {
                         m_mutex.lock();
-                        for (auto &&i : this->m_addresses)
-                        {
-                            Sender s(domain(),sockType(),protocol(),i);
+                        if(this->m_message.size() == 0){
                             m_mutex.unlock();
-                            reciever->onSend(*this,s);
+                            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+
+                            continue;
+                        }
+                        for (auto &&i : this->m_message)
+                        {
+                            m_mutex.unlock();
+                            Socket::SendTo(i.block,i.addre,0);
                              m_mutex.lock();
                         }
-                        this->m_addresses.clear();
+                        this->m_message.clear();
                         m_mutex.unlock();
                     }
                 }
@@ -115,11 +122,13 @@ void cc::UdpServer::SetReciever(UdpServer::Reciever *reciever)
         } });
 }
 
-void cc::UdpServer::PrepareSender(Address &addre)
+void cc::UdpServer::Send(Address &addre,const Block& block)
 {
     m_mutex.lock();
-    this->m_poll.add(fd(), cc::Poll::Event::OUT);
-    this->m_addresses.push_back(addre);
+    Message msg;
+    msg.addre = addre;
+    msg.block.assign(block.data(),block.size());
+    this->m_message.push_back(msg);
     m_mutex.unlock();
 }
 
@@ -222,6 +231,7 @@ void cc::TcpServer::SetReciever(TcpServer::Reciever *reciever)
                             }
                             m_mutex.unlock();
                             needIdle = false;
+                            b.Free();
                         }
                         if(i.revents & cc::Poll::ERR){
                             m_mutex.lock();
@@ -286,4 +296,8 @@ void cc::TcpServer::chectRemoveCache(int senderfd)
     {
         this->m_cache.erase(it);
     }
+}
+
+cc::UdpServer::Message::Message():addre(),block(1)
+{
 }
