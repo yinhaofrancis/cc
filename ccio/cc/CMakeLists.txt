@@ -13,7 +13,8 @@ stream.hpp stream.cpp
 socket.cpp socket.hpp 
 task.hpp task.cpp
 poll.cpp poll.hpp
-server.cpp server.hpp
+udp.cpp udp.hpp
+tcp.cpp tcp.hpp
 connection.cpp connection.hpp
 )
 

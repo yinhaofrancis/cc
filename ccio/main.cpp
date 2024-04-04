@@ -13,7 +13,8 @@
 #include <sys/select.h>
 
 #include "cc/poll.hpp"
-#include "cc/server.hpp"
+#include "cc/udp.hpp"
+#include "cc/tcp.hpp"
 #include "cc/connection.hpp"
 
 class Skeleton : public cc::UdpServer::Reciever, public cc::TcpServer::Reciever, public cc::Connection::Delegate
@@ -83,16 +84,24 @@ int main()
     // cn.Close();
 
     cc::UdpServer cus(cc::ipv4);
-    int ret = cus.Listen(9091);
+    int ret = cus.Listen(8088);
     cus.SetReciever(skk);
-    std::cout << ret <<std::endl;
+    std::cout << strerror(errno)<<std::endl;
+    while (true)
+    {
+        cc::Address ma;
+        cc::Block b(1024);
+        cus.RecvFrom(ma,b);
+        std::cout << b.c_str() << std::endl;
+    }
+    
     // for (size_t i = 0; i < 10000; i++)
     // {
     //     cc::Block b(std::to_string(i));
     //     cc::Address addr(cc::ipv4, "192.168.2.101", 9090);
     //     cus.Send(addr,b);
     //     b.Free();
-    //     std::this_thread::sleep_for(std::chrono::seconds(1));
+    //     std::this_thread::sleep_for(std::chrono::milliseconds(300));
     // }
     std::this_thread::sleep_for(std::chrono::seconds(1000));
     return 0;

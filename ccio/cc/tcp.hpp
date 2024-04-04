@@ -1,5 +1,6 @@
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef TCP_HPP
+#define TCP_HPP
+
 #include "stream.hpp"
 #include "socket.hpp"
 #include "task.hpp"
@@ -23,40 +24,6 @@ namespace cc
     private:
         Address m_address;
     };
-    class UdpServer;
-
-    class UdpServer : protected Socket
-    {
-    public:
-        class Reciever
-        {
-        public:
-            virtual void onRecieve(UdpServer &server, Address &addre, const Block &block) {}
-        };
-
-    public:
-        UdpServer(Domain domain);
-        UdpServer(const UdpServer &) = delete;
-        UdpServer(const UdpServer &&) = delete;
-        int Listen(uint16_t port);
-        void Close();
-        void SetReciever(Reciever *reciever);
-        void Send(Address &addre,const Block&);
-
-    private:
-        struct Message{
-            Address addre;
-            Block block;
-            Message();
-        };
-        void udpLoop();
-        Reciever *m_reciever = nullptr;
-        Loop m_loop;
-        Poll m_poll;
-        std::mutex m_mutex;
-        bool m_is_running = false;
-        std::vector<Message> m_message;
-    };
 
     class TcpServer;
 
@@ -78,9 +45,9 @@ namespace cc
         TcpServer(const TcpServer &&) = delete;
         int Listen(uint16_t port);
         void Close();
-        void Prepare(int senderfd,const Block& block);
+        void Prepare(int senderfd, const Block &block);
         void SetReciever(Reciever *reciever);
-        
+
     private:
         void chectRemoveCache(int senderfd);
         Loop m_loop;
@@ -88,7 +55,7 @@ namespace cc
         std::mutex m_mutex;
         bool m_is_running = false;
         std::unordered_map<int, Sender> m_map_client;
-        std::unordered_map<int,std::vector<Block>> m_cache;
+        std::unordered_map<int, std::vector<Block>> m_cache;
     };
 
 } // namespace cc
