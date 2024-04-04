@@ -1,4 +1,8 @@
 #include "tcp.hpp"
+
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
 cc::Sender::Sender(
     int fd,
     Domain domain,

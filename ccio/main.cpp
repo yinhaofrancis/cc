@@ -86,14 +86,15 @@ int main()
     cc::UdpServer cus(cc::ipv4);
     int ret = cus.Listen(8088);
     cus.SetReciever(skk);
-    std::cout << strerror(errno)<<std::endl;
-    while (true)
-    {
-        cc::Address ma;
-        cc::Block b(1024);
-        cus.RecvFrom(ma,b);
-        std::cout << b.c_str() << std::endl;
-    }
+    std::cout << ret<<std::endl;
+
+    // while (true)
+    // {
+    //     cc::Address ma;
+    //     cc::Block b(1024);
+    //     cus.RecvFrom(ma,b);
+    //     std::cout << b.c_str() << std::endl;
+    // }
     
     // for (size_t i = 0; i < 10000; i++)
     // {
