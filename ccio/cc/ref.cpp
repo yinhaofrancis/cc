@@ -11,19 +11,24 @@ cc::Ref::~Ref()
 
 cc::Ref::Ref(const Ref & r):m_count(new cc::Ref::Count*())
 {
+    if (r.m_count == nullptr)
+        return;
     *m_count = *r.m_count;
     retain();
 }
 
 cc::Ref::Ref(const Ref && r):m_count(new cc::Ref::Count*())
 {
+    if (r.m_count == nullptr)
+        return;
     *m_count = *r.m_count;
     retain();
 }
 
 void cc::Ref::operator=(const Ref & r)
 {
-    
+    if (r.m_count == nullptr)
+        return;
     if(*this->m_count != nullptr){
         release();
     }
@@ -34,6 +39,8 @@ void cc::Ref::operator=(const Ref & r)
 
 void cc::Ref::operator=(const Ref && r)
 {
+    if (r.m_count == nullptr)
+        return;
     if(*this->m_count != nullptr){
         release();
     }

@@ -27,7 +27,7 @@ namespace cc
         void inline release();
         void inline retain();
         std::mutex m_lock;
-        Count** m_count;
+        Count** m_count = nullptr;
         
     };
 }

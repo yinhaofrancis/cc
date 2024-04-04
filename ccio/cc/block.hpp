@@ -19,8 +19,8 @@ namespace cc
         friend class Stream;
         friend class Socket;
     private:
-        void* m_block;
-        size_t m_size;
+        void* m_block = nullptr;
+        size_t m_size = 0;
     };
 } // namespace cc
 

@@ -12,7 +12,10 @@ cc::Block::Block(const size_t size):m_size(size),m_block(malloc(size + 1))
 {
     std::memset(m_block,0,size + 1);
     this->dealloc([this](){
-        free(this->m_block);
+        if(this->m_block != nullptr){
+            free(this->m_block);
+            this->m_block = nullptr;
+        }
     });
 }
 

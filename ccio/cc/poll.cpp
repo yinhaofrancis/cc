@@ -72,7 +72,7 @@ cc::AsyncPoll::AsyncPoll()
         while (this->m_is_running)
         {
             std::vector<Result> events;
-            int r = this->wait(0.1,events);
+            int r = this->wait(10,events);
             if(!this->m_is_running){
                 return;
             }

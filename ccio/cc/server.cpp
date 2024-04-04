@@ -79,7 +79,7 @@ void cc::UdpServer::SetReciever(UdpServerReciever *reciever)
 {
     this->m_is_running = true;
     m_loop.dispatch([this, reciever]()
-                    {
+    {
         this->m_poll.add(fd(),cc::Poll::IN);
         while (this->m_is_running)
         {
@@ -112,7 +112,8 @@ void cc::UdpServer::SetReciever(UdpServerReciever *reciever)
                     }
                 }
             }
-        } });
+        } 
+    });
 }
 
 void cc::UdpServer::PrepareSender(Address &addre)
