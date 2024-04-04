@@ -43,6 +43,7 @@ namespace cc
 
     class Connection : protected Socket,protected AsyncPoll::AsyncPollCallback
     {
+    public:
         class Delegate
         {
         public:

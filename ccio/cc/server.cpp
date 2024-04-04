@@ -75,7 +75,7 @@ void cc::UdpServer::Close()
     Socket::Close();
 }
 
-void cc::UdpServer::SetReciever(UdpServerReciever *reciever)
+void cc::UdpServer::SetReciever(UdpServer::Reciever *reciever)
 {
     this->m_is_running = true;
     m_loop.dispatch([this, reciever]()
@@ -146,16 +146,24 @@ void cc::TcpServer::Close()
     Socket::Close();
 }
 
-void cc::TcpServer::Prepare(int senderfd)
+void cc::TcpServer::Prepare(int senderfd,const Block& block)
 {
     m_mutex.lock();
+    auto cit = std::find_if(m_cache.begin(),m_cache.end(),[senderfd](auto &i){
+        return i.first == senderfd;
+    });
+    if(cit == m_cache.end()){
+        m_cache[senderfd] = std::vector<Block>();
+    }
+    m_cache[senderfd].push_back(block);
+
     auto it = std::find_if(m_map_client.begin(), m_map_client.end(), [&](auto &i)
                            { return i.second.fd() == senderfd; });
     m_poll.add((*it).second.fd(), cc::Poll::OUT);
     m_mutex.unlock();
 }
 
-void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
+void cc::TcpServer::SetReciever(TcpServer::Reciever *reciever)
 {
     this->m_is_running = true;
     m_loop.dispatch([this, reciever]()
@@ -197,6 +205,7 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             Sender s = this->m_map_client[i.fd];
                             if(b.size() == 0){
                                 this->m_map_client.erase(i.fd);
+                                this->chectRemoveCache(i.fd);
                                 m_mutex.unlock();
                                 reciever->onDisconnect(*this,s);
                                 m_mutex.lock();
@@ -213,6 +222,7 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
                             this->m_map_client.erase(i.fd);
+                            this->chectRemoveCache(i.fd);
                             s.Close();
                             m_poll.remove(i.fd);
                             m_mutex.unlock();
@@ -222,6 +232,7 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
                             this->m_map_client.erase(i.fd);
+                            this->chectRemoveCache(i.fd);
                             s.Close();
                             m_poll.remove(i.fd);
                             m_mutex.unlock();
@@ -231,18 +242,36 @@ void cc::TcpServer::SetReciever(TcpServerReciever *reciever)
                             m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
                             this->m_map_client.erase(i.fd);
+                            this->chectRemoveCache(i.fd);
                             s.Close();
                             m_poll.remove(i.fd);
                             m_mutex.unlock();
                             reciever->onError(*this,s,strerror(errno));
                         }
                         if(i.revents & cc::Poll::OUT){
+                            m_mutex.lock();
                             Sender s = this->m_map_client[i.fd];
-                            reciever->onSend(*this,s);
+                            auto m = this->m_cache[i.fd];
+                            this->m_cache.erase(i.fd);
                             m_poll.remove(i.fd,cc::Poll::OUT);
+                            m_mutex.unlock();
+                            
+                            for (auto &&i : m)
+                            {
+                                s.Send(i);   
+                            }
+                            
                         }
                     }
                 }
             }
         } });
+}
+
+void cc::TcpServer::chectRemoveCache(int senderfd)
+{
+    auto it = this->m_cache.find(senderfd);
+    if(it != this->m_cache.end()){
+        this->m_cache.erase(it);
+    }
 }
