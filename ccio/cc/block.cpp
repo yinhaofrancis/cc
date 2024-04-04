@@ -11,19 +11,16 @@ cc::Block::Block(const void *buffer, const size_t size):Block(size)
 cc::Block::Block(const size_t size):m_size(size),m_block(malloc(size + 1))
 {
     std::memset(m_block,0,size + 1);
-    this->dealloc([this](){
-        if(this->m_block != nullptr){
-            free(this->m_block);
-            this->m_block = nullptr;
-        }
-    });
 }
 
 cc::Block::Block(std::string& string):Block(string.data(),string.size()){}
 
 cc::Block::Block(std::string &&string):Block(string.data(),string.size()){}
 
-
+cc::Block cc::Block::copy() const
+{
+    return cc::Block(this->m_block,this->m_size);
+}
 
 const void *cc::Block::data() const
 {
@@ -48,6 +45,14 @@ void cc::Block::assign(const void *buffer, const size_t size)
 {
     
     std::memcpy(m_block,buffer,std::min(size,m_size));
+}
+
+void cc::Block::Free()
+{
+    if(m_block != nullptr){
+        free(m_block);
+        m_block = nullptr;
+    }
 }
 
 std::string cc::Block::str() const

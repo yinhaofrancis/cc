@@ -7,7 +7,7 @@
 #include <mutex>
 #include <condition_variable>
 
-#include "ref.hpp"
+
 namespace cc
 {
     class Pool;

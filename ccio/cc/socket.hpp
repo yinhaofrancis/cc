@@ -49,11 +49,16 @@ namespace cc
         tcp = IPPROTO_TCP,
         udp = IPPROTO_UDP
     };
-    class Address : public cc::Ref
+    class Address 
     {
     public:
         Address(Domain domain, const char *ip, uint16_t port);
         Address(Domain domain, uint16_t port);
+        Address(const Address &);
+        void copy(const cc::Address &a);
+        Address(const Address &&);
+        void operator=(const Address &);
+        void operator=(const Address&&);
         Address();
         Domain family() const;
         uint16_t port() const;

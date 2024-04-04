@@ -84,6 +84,7 @@ cc::Connection::Connection(Domain domain, SockType sock, Protocol proto, Address
         Socket::Connect(address);
     }
     m_ap.add(fd(), cc::Poll::IN, this);
+    m_ap.add(fd(), cc::Poll::OUT, this);
 }
 
 void cc::Connection::onEvent(AsyncPoll &poll, cc::Poll::Result &result)
@@ -118,8 +119,11 @@ void cc::Connection::onEvent(AsyncPoll &poll, cc::Poll::Result &result)
     {
         m_lock.lock();
         auto size = m_blocks.size();
-        m_ap.remove(fd(),cc::Poll::OUT);
         m_lock.unlock();
+        if(size == 0){
+            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            return;
+        }
         while (size > 0)
         {
             if (protocol() == cc::tcp)
@@ -148,8 +152,7 @@ void cc::Connection::onEvent(AsyncPoll &poll, cc::Poll::Result &result)
 void cc::Connection::Send(const Block &block)
 {
     m_lock.lock();
-    m_blocks.push_back(block);
-    m_ap.add(fd(), cc::Poll::OUT, this);
+    m_blocks.push_back(block.copy());
     m_lock.unlock();
 }
 

@@ -2,12 +2,12 @@
 #include <cstring>
 #include <string>
 
-
 cc::Socket::Socket(Domain domain, SockType st, Protocol proto)
-:Stream(socket(domain,st,proto)),m_protocol(proto),m_domain(domain),m_socktype(st)
-{}
+    : Stream(socket(domain, st, proto)), m_protocol(proto), m_domain(domain), m_socktype(st)
+{
+}
 
-cc::Socket::Socket(int fd):Stream(fd)
+cc::Socket::Socket(int fd) : Stream(fd)
 {
 }
 
@@ -55,12 +55,12 @@ int cc::Socket::Connect(const Address &address) const
 
 cc::Socket cc::Socket::createTCP(Domain domain)
 {
-    return Socket(domain,stream,tcp);
+    return Socket(domain, stream, tcp);
 }
 
 cc::Socket cc::Socket::createUDP(Domain domain)
 {
-    return Socket(domain,dgram,udp);
+    return Socket(domain, dgram, udp);
 }
 
 cc::SockType cc::Socket::sockType() const
@@ -76,14 +76,14 @@ cc::Protocol cc::Socket::protocol() const
 void cc::Socket::setSockOptSockLevelInt(SocketOption so, int flag)
 {
     socklen_t size;
-    setsockopt(fd(),SOL_SOCKET,so,&flag,sizeof(int));
+    setsockopt(fd(), SOL_SOCKET, so, &flag, sizeof(int));
 }
 
 int cc::Socket::getSockOptSockLevelInt(SocketOption so)
 {
     int value = 0;
     socklen_t size;
-    getsockopt(fd(),SOL_SOCKET,so,&value,&size);
+    getsockopt(fd(), SOL_SOCKET, so, &value, &size);
     return value;
 }
 
@@ -91,23 +91,23 @@ int cc::Socket::error() const
 {
     int value = 0;
     socklen_t size;
-    getsockopt(fd(),SOL_SOCKET,SO_ERROR,&value,&size);
+    getsockopt(fd(), SOL_SOCKET, SO_ERROR, &value, &size);
     return value;
 }
 
 void cc::Socket::setReuseAddr(bool flag)
 {
-    setSockOptSockLevelInt(ReuseAddr,flag);
+    setSockOptSockLevelInt(ReuseAddr, flag);
 }
 
 void cc::Socket::setReusePort(bool flag)
 {
-    setSockOptSockLevelInt(ReusePort,flag);
+    setSockOptSockLevelInt(ReusePort, flag);
 }
 
 void cc::Socket::setBroadCast(bool flag)
 {
-    setSockOptSockLevelInt(BroadCast,flag);
+    setSockOptSockLevelInt(BroadCast, flag);
 }
 
 cc::Domain cc::Socket::domain() const
@@ -134,7 +134,6 @@ uint16_t cc::Address::port() const
 cc::Address::Address(Domain domain, const char *ip, uint16_t port)
 {
     modifyAddress(domain, ip, port);
-
 }
 
 void cc::Address::modifyAddress(Domain domain, const char *ip, uint16_t port)
@@ -151,7 +150,8 @@ void cc::Address::modifyAddress(Domain domain, const char *ip, uint16_t port)
         saddr.sin_port = nPort;
         saddr.sin_addr = address;
         m_size = sizeof(sockaddr_in);
-        if(this->m_address != nullptr){
+        if (this->m_address != nullptr)
+        {
             free(this->m_address);
         }
         this->m_address = (sockaddr *)malloc(m_size);
@@ -169,7 +169,8 @@ void cc::Address::modifyAddress(Domain domain, const char *ip, uint16_t port)
         saddr.sin6_flowinfo = 0;
         saddr.sin6_scope_id = 0;
         m_size = sizeof(sockaddr_in6);
-        if(this->m_address != nullptr){
+        if (this->m_address != nullptr)
+        {
             free(this->m_address);
         }
         this->m_address = (sockaddr *)malloc(m_size);
@@ -177,11 +178,6 @@ void cc::Address::modifyAddress(Domain domain, const char *ip, uint16_t port)
     }
     break;
     }
-    this->dealloc([this](){
-        if(this->m_address == nullptr){
-            free(this->m_address);
-        }
-    });
 }
 
 cc::Address::Address(Domain domain, uint16_t port)
@@ -189,16 +185,44 @@ cc::Address::Address(Domain domain, uint16_t port)
     switch (domain)
     {
     case ipv4:
-        modifyAddress(domain,"0.0.0.0",port);
+        modifyAddress(domain, "0.0.0.0", port);
         break;
     case ipv6:
-        modifyAddress(domain,"::",port);
+        modifyAddress(domain, "::", port);
     }
-    
 }
 
-cc::Address::Address():Address(cc::ipv4,0)
-{}
+cc::Address::Address(const Address &a)
+{
+    copy(a);
+}
+void cc::Address::copy(const cc::Address &a)
+{
+    if (m_address != nullptr && m_size != a.m_size)
+    {
+        m_address = (sockaddr *)realloc(m_address,a.m_size);
+    }else if(m_address == nullptr){
+        m_address = (sockaddr *)malloc(a.m_size);
+    }
+    this->m_size = a.m_size;
+    memcpy(this->m_address, a.m_address, m_size);
+}
+cc::Address::Address(const Address &&a)
+{
+    copy(a);
+}
+
+void cc::Address::operator=(const Address &a)
+{
+    copy(a);
+}
+void cc::Address::operator=(const Address &&a)
+{
+    copy(a);
+}
+cc::Address::Address() : Address(cc::ipv4, 0)
+{
+}
 
 std::string cc::Address::ipAddress() const
 {

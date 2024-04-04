@@ -29,6 +29,7 @@ public:
     {
         cc::Block b("hello");
         sender.Send(b);
+        b.Free();
     }
     virtual void onConnect(cc::TcpServer &server, cc::Sender &sender)
     {
@@ -49,7 +50,9 @@ public:
         str += "Content-Type: text/html; charset=utf-8 \r\n";
         str += "Content-Length:" + std::to_string(content.size());
         str += content;
-        server.Prepare(sender.fd(),cc::Block(str));
+        cc::Block b(str);
+        server.Prepare(sender.fd(),b);
+        b.Free();
     }
     virtual void onSend(cc::TcpServer &server, cc::Sender &sender)
     {
@@ -76,13 +79,14 @@ int main()
         std::cout << strerror(errno) << std::endl;
     }
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    cc::Address addr(cc::ipv4, "172.19.185.162", 8080);
+    cc::Address addr(cc::ipv4, "192.168.2.101", 8080);
     cc::Connection cn(cc::ipv4, cc::stream, cc::tcp, addr);
     cn.SetDelegate(new Skeleton());
     for (size_t i = 0; i < 100; i++)
     {
         cc::Block b(std::to_string(i));
         cn.Send(b);
+        b.Free();
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     cn.Close();
