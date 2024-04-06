@@ -15,13 +15,14 @@ const TimeInterval kDefaultReciecveSize = 2048;
 cc::UdpServer::UdpServer(Domain domain) : Socket(domain, cc::dgram, cc::udp)
 {
     Stream::addStatus(O_NONBLOCK);
-    // this->setReusePort(true);
-    // this->setReuseAddr(true);
+    this->setReusePort(true);
+    this->setReuseAddr(true);
 }
 
 int cc::UdpServer::Listen(uint16_t port)
 {
-    Address b(domain(), port);
+    Address b(domain(),port);
+    std::cout << "bind: "<< b.ipAddress() <<" port: " << b.port() << std::endl;
     return Socket::Bind(b);
 }
 
