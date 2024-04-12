@@ -50,13 +50,14 @@ void cc::UdpServer::SetReciever(UdpServer::Reciever *reciever)
             if(ret > 0){
                 for (auto &&i : events)
                 {
-                    if(i.revents & cc::Poll::IN || i.revents & cc::Poll::PRI){
+                    if(i.revents & cc::Poll::IN){
                         Address addr;
                         Block buffer(kDefaultReciecveSize);
                         Socket::RecvFrom(buffer,addr,0);
                         reciever->onRecieve(*this,addr,buffer);
                         buffer.Free();
-                    }else if(i.revents & cc::Poll::OUT) {
+                    }
+                    if(i.revents & cc::Poll::OUT) {
                         m_mutex.lock();
                         if(this->m_message.size() == 0){
                             m_mutex.unlock();
