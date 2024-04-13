@@ -43,13 +43,13 @@ namespace rpc
         }
         int send(void* buffer,size_t len,int flags) const{
             static_assert(s == sock::strm,"sock is not stream");
-            return ::send(stream::fd,buffer,len,flags);
+            return stream::send(stream::fd,buffer,len);
         }
         int recv(void* buffer,size_t len,int flags) const{
             static_assert(s == sock::strm,"sock is not stream");
-            return ::recv(stream::fd,buffer,len,flags);
+            return stream::recv(stream::fd,buffer,len);
         }
-        int setOption(socket_option op,int flag){
+        int setOption(socket_option op,int flag) const{
             return setsockopt(stream::fd,SOL_SOCKET,op,&flag,sizeof(flag));
         }
         const domain m_domain = d;

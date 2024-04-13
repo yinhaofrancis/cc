@@ -5,7 +5,10 @@
 
 int main(int, char **)
 {
-    rpc::file ff("m", rpc::status::creat | rpc::status::rw);
+
+    rpc::file::mkfifo("n",0777);
+    rpc::file ff("n", rpc::status::creat | rpc::status::rw);
+    
     ff.write("111111", 6);
     std::cout << strerror(errno) << std::endl;
     ff.close();

@@ -19,19 +19,21 @@ namespace rpc
         stream(int fd);
         stream(stream&);
         stream(stream&&);
-        size_t read(void *buf, size_t len);
-        size_t write(const void *buf, size_t len);
-        rpc::status status();
-        int setStatus(rpc::status status);
-        int close();
+        size_t read(void *buf, size_t len) const ;
+        size_t write(const void *buf, size_t len) const;
+        size_t send(const void *buf, size_t len) const;
+        size_t recv(void *buf, size_t len) const;
+        rpc::status status() const;
+        int setStatus(rpc::status status) const;
+        int close() const;
     };
 
     class pipe{
     public:
         pipe();
-        void close();
-        const rpc::stream& rpipe();
-        const rpc::stream& wpipe();
+        void close() const;
+        const rpc::stream& rpipe() const;
+        const rpc::stream& wpipe() const;
     private:
         rpc::stream *m_rpipe = nullptr;
         rpc::stream *m_wpipe = nullptr;
