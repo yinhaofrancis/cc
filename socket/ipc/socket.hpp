@@ -31,19 +31,23 @@ namespace ipc
             return connect(fd,addr.raw(),addr.size());
         }
         int sendto(address<d> addr,const void* buffer,size_t len,int flags) const{
+            static_assert(s == dgram,"sock is not dgram");
             return ::sendto(fd,buffer,len,flags,addr.raw(),addr.size());
         }
         int recvfrom(address<d> addr,void* buffer,size_t len,int flags) const{
+            static_assert(s == dgram,"sock is not dgram");
             return ::recvfrom(fd,buffer,len,flags,addr.raw(),addr.size());
         }
         int send(void* buffer,size_t len,int flags) const{
+            static_assert(s == stream,"sock is not stream");
             return ::send(fd,buffer,len,flags);
         }
         int recv(void* buffer,size_t len,int flags) const{
+            static_assert(s == stream,"sock is not stream");
             return ::recv(fd,buffer,len,flags);
         }
         int setOption(socket_option op,int flag){
-            return setsockopt(fd,SOL_SOCKET,op,&flag,sizeof(flag))
+            return setsockopt(fd,SOL_SOCKET,op,&flag,sizeof(flag));
         }
         const domain m_domain = d;
         const sock m_sock = s;
