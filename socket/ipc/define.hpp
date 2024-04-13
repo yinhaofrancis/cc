@@ -27,7 +27,7 @@ namespace ipc
     enum sock
     {
 
-        stream = SOCK_STREAM,
+        strm = SOCK_STREAM,
 
         dgram = SOCK_DGRAM,
 

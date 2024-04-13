@@ -2,6 +2,12 @@
 
 ipc::stream::stream(int fd) : fd(fd) {}
 
+ipc::stream::stream(stream & s):fd(s.fd)
+{}
+
+ipc::stream::stream(stream && s):fd(s.fd)
+{}
+
 size_t ipc::stream::read(void *buf, size_t len)
 {
     char *cur = reinterpret_cast<char *>(buf);
@@ -90,9 +96,14 @@ int ipc::file::truncate(off_t offset)
     return ::ftruncate(fd, offset);
 }
 
-void ipc::file::umask(mode_t mode)
+int ipc::file::umask(mode_t mode)
 {
-    umask(mode);
+    return umask(mode);
+}
+
+int ipc::file::mkfifo(const char *path, mode_t mode)
+{
+    return ::mkfifo(path,mode);
 }
 
 ipc::status operator|(ipc::status v1, ipc::status v2)
@@ -100,3 +111,28 @@ ipc::status operator|(ipc::status v1, ipc::status v2)
     return ipc::status((int)v1 | (int)v2);
 }
 
+ipc::pipe::pipe()
+{
+    int fds[2];
+    ::pipe(fds);
+    m_rpipe = new ipc::stream(fds[0]);
+    m_wpipe = new ipc::stream(fds[1]);
+}
+
+void ipc::pipe::close()
+{
+    m_rpipe->close();
+    m_wpipe->close();
+    delete m_rpipe;
+    delete m_wpipe;
+}
+
+const ipc::stream &ipc::pipe::rpipe()
+{
+    return *m_rpipe;
+}
+
+const ipc::stream &ipc::pipe::wpipe()
+{
+    return *m_wpipe;
+}

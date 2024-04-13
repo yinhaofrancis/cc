@@ -42,11 +42,11 @@ namespace ipc
             return ::recvfrom(stream::fd,buffer,len,flags,addr.raw(),addr.size());
         }
         int send(void* buffer,size_t len,int flags) const{
-            static_assert(s == sock::stream,"sock is not stream");
+            static_assert(s == sock::strm,"sock is not stream");
             return ::send(stream::fd,buffer,len,flags);
         }
         int recv(void* buffer,size_t len,int flags) const{
-            static_assert(s == sock::stream,"sock is not stream");
+            static_assert(s == sock::strm,"sock is not stream");
             return ::recv(stream::fd,buffer,len,flags);
         }
         int setOption(socket_option op,int flag){
