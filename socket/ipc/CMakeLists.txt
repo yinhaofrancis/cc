@@ -4,5 +4,5 @@ set(CMAKE_CXX_STANDARD 20)
 
 add_library(
     ipc 
-    socket.hpp stream.hpp stream.cpp
+    socket.hpp stream.hpp stream.cpp socket.cpp define.hpp define.cpp
 )

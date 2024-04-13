@@ -68,12 +68,14 @@ namespace ipc
         append = O_APPEND,
 
         creat = O_CREAT,
+         
+        rw  = O_RDWR,
 
         trunc = O_TRUNC,
 
         sync = O_SYNC
     };
-
+    status operator | (status v1 ,status v2);
    
 
     template <domain d>

@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/stat.h>
 #include "define.hpp"
 
 namespace ipc
@@ -36,6 +36,7 @@ namespace ipc
         file(const char *path,ipc::status status);
         off_t seek(off_t offset,whence w);
         int truncate(off_t offset);
+        static void umask(mode_t mode);
     };
 } // namespace ipc
 
