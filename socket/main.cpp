@@ -1,11 +1,11 @@
 #include <iostream>
-#include "ipc/define.hpp"
-#include "ipc/stream.hpp"
-#include "ipc/socket.hpp"
+#include "rpc/define.hpp"
+#include "rpc/stream.hpp"
+#include "rpc/socket.hpp"
 
 int main(int, char **)
 {
-    ipc::file ff("m", ipc::status::creat | ipc::status::rw);
+    rpc::file ff("m", rpc::status::creat | rpc::status::rw);
     ff.write("111111", 6);
     std::cout << strerror(errno) << std::endl;
     ff.close();

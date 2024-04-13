@@ -1,14 +1,14 @@
 #include "stream.hpp"
 
-ipc::stream::stream(int fd) : fd(fd) {}
+rpc::stream::stream(int fd) : fd(fd) {}
 
-ipc::stream::stream(stream & s):fd(s.fd)
+rpc::stream::stream(stream & s):fd(s.fd)
 {}
 
-ipc::stream::stream(stream && s):fd(s.fd)
+rpc::stream::stream(stream && s):fd(s.fd)
 {}
 
-size_t ipc::stream::read(void *buf, size_t len)
+size_t rpc::stream::read(void *buf, size_t len)
 {
     char *cur = reinterpret_cast<char *>(buf);
     size_t space = len;
@@ -40,7 +40,7 @@ size_t ipc::stream::read(void *buf, size_t len)
     return len - space;
 }
 
-size_t ipc::stream::write(const void *buf, size_t len)
+size_t rpc::stream::write(const void *buf, size_t len)
 {
     char *cur = (char *)(buf);
     size_t space = len;
@@ -67,59 +67,59 @@ size_t ipc::stream::write(const void *buf, size_t len)
     }
     return len - space;
 }
-ipc::status ipc::stream::status()
+rpc::status rpc::stream::status()
 {
-    return ipc::status(fcntl(fd, F_GETFD));
+    return rpc::status(fcntl(fd, F_GETFD));
 }
 
-int ipc::stream::setStatus(ipc::status status)
+int rpc::stream::setStatus(rpc::status status)
 {
     return fcntl(fd, F_GETFD, status);
 }
 
-int ipc::stream::close()
+int rpc::stream::close()
 {
     return ::close(fd);
 }
 
-ipc::file::file(const char *path, ipc::status status) : stream(open(path, status))
+rpc::file::file(const char *path, rpc::status status) : stream(open(path, status))
 {
 }
 
-off_t ipc::file::seek(off_t offset, whence w)
+off_t rpc::file::seek(off_t offset, whence w)
 {
     return ::lseek(fd, offset, w);
 }
 
-int ipc::file::truncate(off_t offset)
+int rpc::file::truncate(off_t offset)
 {
     return ::ftruncate(fd, offset);
 }
 
-int ipc::file::umask(mode_t mode)
+int rpc::file::umask(mode_t mode)
 {
     return umask(mode);
 }
 
-int ipc::file::mkfifo(const char *path, mode_t mode)
+int rpc::file::mkfifo(const char *path, mode_t mode)
 {
     return ::mkfifo(path,mode);
 }
 
-ipc::status operator|(ipc::status v1, ipc::status v2)
+rpc::status operator|(rpc::status v1, rpc::status v2)
 {
-    return ipc::status((int)v1 | (int)v2);
+    return rpc::status((int)v1 | (int)v2);
 }
 
-ipc::pipe::pipe()
+rpc::pipe::pipe()
 {
     int fds[2];
     ::pipe(fds);
-    m_rpipe = new ipc::stream(fds[0]);
-    m_wpipe = new ipc::stream(fds[1]);
+    m_rpipe = new rpc::stream(fds[0]);
+    m_wpipe = new rpc::stream(fds[1]);
 }
 
-void ipc::pipe::close()
+void rpc::pipe::close()
 {
     m_rpipe->close();
     m_wpipe->close();
@@ -127,12 +127,12 @@ void ipc::pipe::close()
     delete m_wpipe;
 }
 
-const ipc::stream &ipc::pipe::rpipe()
+const rpc::stream &rpc::pipe::rpipe()
 {
     return *m_rpipe;
 }
 
-const ipc::stream &ipc::pipe::wpipe()
+const rpc::stream &rpc::pipe::wpipe()
 {
     return *m_wpipe;
 }

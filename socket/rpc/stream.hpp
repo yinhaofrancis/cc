@@ -9,7 +9,7 @@
 #include <sys/stat.h>
 #include "define.hpp"
 
-namespace ipc
+namespace rpc
 {
 
     class stream
@@ -21,8 +21,8 @@ namespace ipc
         stream(stream&&);
         size_t read(void *buf, size_t len);
         size_t write(const void *buf, size_t len);
-        ipc::status status();
-        int setStatus(ipc::status status);
+        rpc::status status();
+        int setStatus(rpc::status status);
         int close();
     };
 
@@ -30,11 +30,11 @@ namespace ipc
     public:
         pipe();
         void close();
-        const ipc::stream& rpipe();
-        const ipc::stream& wpipe();
+        const rpc::stream& rpipe();
+        const rpc::stream& wpipe();
     private:
-        ipc::stream *m_rpipe = nullptr;
-        ipc::stream *m_wpipe = nullptr;
+        rpc::stream *m_rpipe = nullptr;
+        rpc::stream *m_wpipe = nullptr;
     };
 
 
@@ -46,12 +46,12 @@ namespace ipc
             seekend = SEEK_END
         };
     public:
-        file(const char *path,ipc::status status);
+        file(const char *path,rpc::status status);
         off_t seek(off_t offset,whence w);
         int truncate(off_t offset);
         static int umask(mode_t mode);
         static int mkfifo(const char* path,mode_t mode);
     };
-} // namespace ipc
+} // namespace rpc
 
 #endif

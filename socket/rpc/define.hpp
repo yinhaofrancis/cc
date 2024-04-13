@@ -9,7 +9,7 @@
 #include <string>
 #include <fcntl.h>
 
-namespace ipc
+namespace rpc
 {
     enum domain
     {
@@ -155,6 +155,6 @@ namespace ipc
     private:
         uint8_t buffer[sizeof(sockaddr_in6)];
     };
-} // namespace ipc
+} // namespace rpc
 
 #endif

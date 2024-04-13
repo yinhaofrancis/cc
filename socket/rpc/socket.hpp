@@ -5,7 +5,7 @@
 #include "define.hpp"
 #include "stream.hpp"
 
-namespace ipc
+namespace rpc
 {   
      enum socket_option{
         reuse_addr  =   SO_REUSEADDR,
@@ -56,7 +56,7 @@ namespace ipc
         const sock m_sock = s;
         const protocol m_protocol = p;
     };
-} // namespace ipc
+} // namespace rpc
 
 #endif
 
