@@ -57,9 +57,24 @@ namespace ipc
 
     };
 
-    enum flag{
-        noblock = O_NONBLOCK,
+    enum status
+    {
+        nonblock = O_NONBLOCK,
+
+        rd_only = O_RDONLY,
+
+        wr_only = O_WRONLY,
+
+        append = O_APPEND,
+
+        creat = O_CREAT,
+
+        trunc = O_TRUNC,
+
+        sync = O_SYNC
     };
+
+   
 
     template <domain d>
     class address
@@ -88,38 +103,48 @@ namespace ipc
 
         const domain m_domain = d;
 
-        uint16_t port(){
-            if(d == ipv4){
+        uint16_t port()
+        {
+            if (d == ipv4)
+            {
                 sockaddr_in *addr = reinterpret_cast<sockaddr_in *>(buffer);
                 return ntohs(addr->sin_port);
             }
-            else if(d == ipv6){
+            else if (d == ipv6)
+            {
                 sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *>(buffer);
                 return ntohs(addr->sin6_port);
             }
             return 0;
         }
-        std::string ip_address(){
+        std::string ip_address()
+        {
             char result[256];
             std::memset(result, 0, sizeof(result));
-            if(d == ipv4){
+            if (d == ipv4)
+            {
                 sockaddr_in *addr = reinterpret_cast<sockaddr_in *>(buffer);
                 inet_ntop(m_domain, &addr->sin_addr, result, sizeof(result));
             }
-            else if(d == ipv6){
+            else if (d == ipv6)
+            {
                 sockaddr_in6 *addr = reinterpret_cast<sockaddr_in6 *>(buffer);
                 inet_ntop(m_domain, &addr->sin6_addr, result, sizeof(result));
             }
             return std::string(result);
         }
-        const sockaddr* raw(){
-            return reinterpret_cast<sockaddr*>(buffer);
+        const sockaddr *raw()
+        {
+            return reinterpret_cast<sockaddr *>(buffer);
         }
-        const size_t size(){
-            if(d == ipv4){
+        const size_t size()
+        {
+            if (d == ipv4)
+            {
                 return sizeof(sockaddr_in);
             }
-            else if(d == ipv6){
+            else if (d == ipv6)
+            {
                 return sizeof(sockaddr_in6);
             }
             return 0;

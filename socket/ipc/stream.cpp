@@ -60,6 +60,32 @@ size_t ipc::stream::write(const void *buf, size_t len)
     }
     return len - space;
 }
-int ipc::stream::close(){
+ipc::status ipc::stream::status()
+{
+    return ipc::status(fcntl(fd,F_GETFD));
+}
+
+int ipc::stream::setStatus(ipc::status status)
+{
+    return fcntl(fd,F_GETFD,status);
+}
+
+int ipc::stream::close()
+{
     return ::close(fd);
+}
+
+ipc::file::file(const char *path, ipc::status status):stream(open(path,status))
+{
+    
+}
+
+off_t ipc::file::seek(off_t offset, whence w)
+{
+    return ::lseek(fd,offset,w);
+}
+
+int ipc::file::truncate(off_t offset)
+{
+    return ::ftruncate(fd,offset);
 }

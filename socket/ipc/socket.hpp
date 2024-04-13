@@ -6,6 +6,17 @@
 
 namespace ipc
 {   
+     enum socket_option{
+        reuse_addr  =   SO_REUSEADDR,
+        keep_alive  =   SO_KEEPALIVE,
+        reuse_port  =   SO_REUSEPORT,
+        liger       =   SO_LINGER,
+        snd_buf     =   SO_SNDBUF,
+        rcv_buf     =   SO_RCVBUF,
+        rcv_lowat   =   SO_RCVLOWAT,
+        snd_lowat   =   SO_SNDLOWAT
+    };
+
     template<domain d,sock s,protocol p>  
     class socket:public stream {
     public:
@@ -30,6 +41,9 @@ namespace ipc
         }
         int recv(void* buffer,size_t len,int flags) const{
             return ::recv(fd,buffer,len,flags);
+        }
+        int setOption(socket_option op,int flag){
+            return setsockopt(fd,SOL_SOCKET,op,&flag,sizeof(flag))
         }
         const domain m_domain = d;
         const sock m_sock = s;
