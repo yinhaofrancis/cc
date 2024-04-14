@@ -24,14 +24,15 @@ namespace rpc
     class socket:public stream {
     public:
         socket():stream(::socket(d,s,p)) { };
+
         int bind(address<d> addr) const{
-            return ::bind(stream::fd,addr.raw(),sizeof(addr));
+            return ::bind(stream::fd,addr.raw(),addr.size());
         }
         int listen(int backlog) const{
             return ::listen(stream::fd,backlog);
         }
         int connect(address<d> addr) const{
-            return connect(stream::fd,addr.raw(),addr.size());
+            return ::connect(stream::fd,addr.raw(),addr.size());
         }
         int sendto(address<d> addr,const void* buffer,size_t len,int flags) const{
             static_assert(s == dgram,"sock is not dgram");
@@ -41,9 +42,14 @@ namespace rpc
             static_assert(s == dgram,"sock is not dgram");
             return ::recvfrom(stream::fd,buffer,len,flags,addr.raw(),addr.size());
         }
-        int send(void* buffer,size_t len,int flags) const{
+        int send(const void* buffer,size_t len) const{
             static_assert(s == sock::strm,"sock is not stream");
-            return stream::send(stream::fd,buffer,len);
+            return stream::send(buffer,len);
+        }
+        rpc::stream accept(address<d> &addr) const {
+            socklen_t size;
+            int fd = ::accept(stream::fd,(sockaddr*)addr.raw(),&size);
+            return rpc::stream(fd);
         }
         int recv(void* buffer,size_t len,int flags) const{
             static_assert(s == sock::strm,"sock is not stream");
@@ -55,6 +61,9 @@ namespace rpc
         const domain m_domain = d;
         const sock m_sock = s;
         const protocol m_protocol = p;
+
+    private:
+        socket(int fd):stream(fd) { };
     };
 } // namespace rpc
 

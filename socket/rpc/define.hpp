@@ -56,6 +56,7 @@ namespace rpc
 
         esp = IPPROTO_ESP,
 
+        none = 0
     };
 
     enum status
@@ -82,14 +83,15 @@ namespace rpc
     class address
     {
     public:
-        address(const char path[104], uint8_t len)
+        address(const char *path)
         {
             static_assert(d == unix,"domain is not unix");
+            static_assert(sizeof(path) < 104,"path len too large");
             memset(buffer, 0, sizeof(buffer));
             sockaddr_un *addr = reinterpret_cast<sockaddr_un *>(buffer);
             addr->sun_family = AF_UNIX;
             strcpy(addr->sun_path,path);
-            addr->sun_len = len;
+            addr->sun_len = strlen(path);
         }
 
         address(const char *ip, uint16_t port)
