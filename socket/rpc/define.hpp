@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <string>
 #include <fcntl.h>
+#include <sys/un.h>
 
 namespace rpc
 {
@@ -68,22 +69,32 @@ namespace rpc
         append = O_APPEND,
 
         creat = O_CREAT,
-         
-        rw  = O_RDWR,
+
+        rw = O_RDWR,
 
         trunc = O_TRUNC,
 
         sync = O_SYNC
     };
-    status operator | (status v1 ,status v2);
-   
+    status operator|(status v1, status v2);
 
     template <domain d>
     class address
     {
     public:
+        address(const char path[104], uint8_t len)
+        {
+            static_assert(d == unix,"domain is not unix");
+            memset(buffer, 0, sizeof(buffer));
+            sockaddr_un *addr = reinterpret_cast<sockaddr_un *>(buffer);
+            addr->sun_family = AF_UNIX;
+            strcpy(addr->sun_path,path);
+            addr->sun_len = len;
+        }
+
         address(const char *ip, uint16_t port)
         {
+            static_assert(d == ipv4 || d == ipv6, "domain is not ipv4 or ipv6");
             memset(buffer, 0, sizeof(buffer));
             if (d == ipv4)
             {
@@ -105,8 +116,16 @@ namespace rpc
 
         const domain m_domain = d;
 
+        std::string path(){
+            static_assert(d == unix , "domain is not unix");
+            if (d == unix){
+                sockaddr_un *addr = reinterpret_cast<sockaddr_un *>(buffer);
+                return std::string(addr->sun_path);
+            }
+        }
         uint16_t port()
         {
+            static_assert(d == ipv4 || d == ipv6, "domain is not ipv4 or ipv6");
             if (d == ipv4)
             {
                 sockaddr_in *addr = reinterpret_cast<sockaddr_in *>(buffer);
@@ -121,6 +140,7 @@ namespace rpc
         }
         std::string ip_address()
         {
+            static_assert(d == ipv4 || d == ipv6, "domain is not ipv4 or ipv6");
             char result[256];
             std::memset(result, 0, sizeof(result));
             if (d == ipv4)
@@ -149,11 +169,14 @@ namespace rpc
             {
                 return sizeof(sockaddr_in6);
             }
+            else if (d == unix){
+                return sizeof(sockaddr_un);
+            }
             return 0;
         }
 
     private:
-        uint8_t buffer[sizeof(sockaddr_in6)];
+        uint8_t buffer[256];
     };
 } // namespace rpc
 
