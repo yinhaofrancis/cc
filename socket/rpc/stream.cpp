@@ -127,12 +127,12 @@ size_t rpc::stream::recv(void *buf, size_t len) const
 }
 rpc::status rpc::stream::status() const
 {
-    return rpc::status(fcntl(fd, F_GETFD));
+    return rpc::status(fcntl(fd, F_GETFL));
 }
 
 int rpc::stream::setStatus(rpc::status status) const
 {
-    return fcntl(fd, F_GETFD, status);
+    return fcntl(fd, F_SETFL, status);
 }
 
 int rpc::stream::close() const

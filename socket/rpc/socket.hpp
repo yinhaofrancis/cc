@@ -25,6 +25,8 @@ namespace rpc
     public:
         socket():stream(::socket(d,s,p)) { };
 
+        socket(int fd):stream(fd) { };
+
         int bind(address<d> addr) const{
             return ::bind(stream::fd,addr.raw(),addr.size());
         }
@@ -61,9 +63,7 @@ namespace rpc
         const domain m_domain = d;
         const sock m_sock = s;
         const protocol m_protocol = p;
-
-    private:
-        socket(int fd):stream(fd) { };
+        
     };
 } // namespace rpc
 

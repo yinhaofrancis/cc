@@ -2,6 +2,7 @@
 #include "rpc/define.hpp"
 #include "rpc/stream.hpp"
 #include "rpc/socket.hpp"
+#include "rpc/select.hpp"
 #include <sys/un.h>
 #include <thread>
 
@@ -17,8 +18,16 @@ int main(int, char **)
         rpc::address<rpc::domain::unix> addr("um");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         s.connect(addr);
-        const char *buff = "123456";
-        s.write(buff, 6);
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        int c = 100;
+
+        while (c > 0)
+        {
+            const char *buff = "123456";
+            s.write(buff, 6);
+            c--;
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
         s.close();
     }
     else if (p > 0)
@@ -45,15 +54,26 @@ int main(int, char **)
             std::cout << strerror(errno) << std::endl;
         }
         std::cout << "accept " << client.path() << std::endl;
-        char buff[1024];
 
-        memset(buff, 0, 1024);
+        timeval k;
+        k.tv_sec = 1;
+        k.tv_usec = 0;
+        rpc::select<rpc::event_in> sl(k, [](int fd)
+                                      {
+                                          rpc::stream s(fd);
+                                          s.setStatus(rpc::nonblock);
+                                          char buff[1024];
 
-        cliet.read(buff, 1024);
+                                          memset(buff, 0, 1024);
 
-        std::cout << buff << std::endl;
+                                          auto ret = s.read(buff, 1024);
+                                          std::cout << buff << std::endl;
+                                          return 1;
+                                      });
+        sl.add(cliet.fd);
 
-        cliet.close();
-        s.close();
+        std::this_thread::sleep_for(std::chrono::seconds(300));
+        // cliet.close();
+        // s.close();
     }
 }
