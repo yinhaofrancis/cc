@@ -5,10 +5,12 @@
 #include "rpc/select.hpp"
 #include <sys/un.h>
 #include <thread>
-
+template<class T>
+T make(int fd){
+    return T(fd);
+}
 int main(int, char **)
 {
-
     pid_t p = fork();
 
     if (p == 0)
@@ -58,15 +60,15 @@ int main(int, char **)
         timeval k;
         k.tv_sec = 1;
         k.tv_usec = 0;
-        rpc::select<rpc::event_in> sl(k, [](int fd)
+        rpc::select<rpc::event_in,rpc::stream> sl(k, [](rpc::stream fd)
                                       {
-                                          rpc::stream s(fd);
-                                          s.setStatus(rpc::nonblock);
+                                          
+                                          fd.setStatus(rpc::nonblock);
                                           char buff[1024];
 
                                           memset(buff, 0, 1024);
 
-                                          auto ret = s.read(buff, 1024);
+                                          auto ret = fd.read(buff, 1024);
                                           std::cout << buff << std::endl;
                                           return 1;
                                       });

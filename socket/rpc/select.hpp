@@ -16,11 +16,11 @@ namespace rpc
         event_out,
         event_err
     };
-    template <select_event se>
+    template <select_event se,typename FD>
     class select
     {
     public:
-        select(timeval time, std::function<int(int)> callback)
+        select(timeval time, std::function<int(FD)> callback)
         {
             bool* c_running = new bool(true);
             std::mutex* c_lock = new std::mutex();
@@ -48,7 +48,7 @@ namespace rpc
                         
                         for (auto i :(*c_fds)){
                             if (FD_ISSET(i,&m_sets)){
-                                int ret = callback(i);
+                                int ret = callback(FD(i));
                                 if(ret > 0){
                                     current.push_back(i);
                                 }
