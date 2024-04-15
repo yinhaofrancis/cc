@@ -5,10 +5,7 @@
 #include "rpc/select.hpp"
 #include <sys/un.h>
 #include <thread>
-template<class T>
-T make(int fd){
-    return T(fd);
-}
+
 int main(int, char **)
 {
     auto dupout = rpc::stream::dup(STDOUT_FILENO);
@@ -19,28 +16,59 @@ int main(int, char **)
     timeval k;
     k.tv_sec = 1;
     k.tv_usec = 0;
-    rpc::select<rpc::se_in,rpc::stream> s(k,[](rpc::stream &&s){
+    rpc::select<rpc::se_in, rpc::stream> s(k, [](rpc::stream &&s)
+                                           {
         char u[128];
         memset(u, 0, 128);
         s.read(u, 128);
         std::cout << u << std::endl;
-        return 1;
-    });
-    s.add(dupin.fd);
+        return 1; });
+    s.add(dupin);
 
-   while (true)
-   {
+    while (true)
+    {
 
         std::this_thread::sleep_for(std::chrono::seconds(1));
         dupout.write("hello world\n", 12);
-   }
-   
+    }
 }
 
+void pipe()
+{
+    rpc::pipe p;
+    pid_t pid = fork();
 
-void unix(){
-     pid_t p = fork();
-
+    if (pid == 0)
+    {
+        int c = 100;
+        while (c > 0)
+        {
+            p.wpipe().write("abv", 3);
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            c--;
+        }
+    }
+    else
+    {
+        timeval k;
+        k.tv_sec = 1;
+        k.tv_usec = 0;
+        rpc::select<rpc::se_in, rpc::stream> sl(k, [](rpc::stream &&fd)
+                                                {
+            char k[10];
+            memset(k,0,10);
+            fd.read(k,10);
+            std::cout << k << std::endl; 
+            return 1;
+        });
+            
+        sl.add(p.rpipe());
+        std::this_thread::sleep_for(std::chrono::seconds(1000));
+    }
+}
+void unix()
+{
+    pid_t p = fork();
     if (p == 0)
     {
         rpc::socket<rpc::domain::unix, rpc::sock::strm, rpc::protocol::none> s;
@@ -88,8 +116,8 @@ void unix(){
         timeval k;
         k.tv_sec = 1;
         k.tv_usec = 0;
-        rpc::select<rpc::se_in,rpc::stream> sl(k, [](rpc::stream fd)
-                                      {
+        rpc::select<rpc::se_in, rpc::stream> sl(k, [](rpc::stream fd)
+                                                {
                                           
                                           fd.setStatus(rpc::nonblock);
                                           char buff[1024];
@@ -98,12 +126,9 @@ void unix(){
 
                                           auto ret = fd.read(buff, 1024);
                                           std::cout << buff << std::endl;
-                                          return 1;
-                                      });
-        sl.add(cliet.fd);
+                                          return ret; });
+        sl.add(cliet);
 
         std::this_thread::sleep_for(std::chrono::seconds(300));
-        // cliet.close();
-        // s.close();
     }
 }

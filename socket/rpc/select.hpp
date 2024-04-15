@@ -79,10 +79,10 @@ namespace rpc
             *m_running = false;
         }
         
-        void add(int fd){
+        void add(const FD &fd){
             if(m_running != nullptr && *m_running == true){
                 m_lock->lock();
-                m_FDs->push_back(fd);
+                m_FDs->push_back(fd.fd);
                 m_lock->unlock();
             }
             
