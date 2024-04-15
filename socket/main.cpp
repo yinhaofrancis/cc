@@ -5,8 +5,14 @@
 #include "rpc/select.hpp"
 #include <sys/un.h>
 #include <thread>
-
+void pipte();
+void dupTest();
 int main(int, char **)
+{
+    pipte();
+}
+
+void dupTest()
 {
     auto dupout = rpc::stream::dup(STDOUT_FILENO);
     dupout.setStatus(rpc::nonblock);
@@ -33,18 +39,19 @@ int main(int, char **)
     }
 }
 
-void pipe()
+void pipte()
 {
     rpc::pipe p;
+    p.rpipe().setStatus(rpc::nonblock);
     pid_t pid = fork();
 
     if (pid == 0)
     {
-        int c = 100;
+        int c = 10;
         while (c > 0)
         {
-            p.wpipe().write("abv", 3);
             std::this_thread::sleep_for(std::chrono::seconds(1));
+            p.wpipe().write("a123456789", 10);
             c--;
         }
     }
@@ -55,9 +62,9 @@ void pipe()
         k.tv_usec = 0;
         rpc::select<rpc::se_in, rpc::stream> sl(k, [](rpc::stream &&fd)
                                                 {
-            char k[10];
-            memset(k,0,10);
-            fd.read(k,10);
+            char k[100];
+            memset(k,0,100);
+            fd.read(k,100);
             std::cout << k << std::endl; 
             return 1;
         });

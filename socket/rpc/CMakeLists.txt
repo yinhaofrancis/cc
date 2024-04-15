@@ -7,5 +7,5 @@ add_library(
     socket.hpp socket.cpp 
     stream.hpp stream.cpp 
     define.hpp define.cpp
-    select.hpp select.cpp
+    select.hpp
 )
