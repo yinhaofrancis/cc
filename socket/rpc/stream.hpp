@@ -26,6 +26,7 @@ namespace rpc
         rpc::status status() const;
         int setStatus(rpc::status status) const;
         int close() const;
+        static stream dup(int fd);
     };
 
     class pipe{

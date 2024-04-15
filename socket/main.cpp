@@ -11,7 +11,35 @@ T make(int fd){
 }
 int main(int, char **)
 {
-    pid_t p = fork();
+    auto dupout = rpc::stream::dup(STDOUT_FILENO);
+    dupout.setStatus(rpc::nonblock);
+    auto dupin = rpc::stream::dup(STDIN_FILENO);
+    dupin.setStatus(rpc::nonblock);
+
+    timeval k;
+    k.tv_sec = 1;
+    k.tv_usec = 0;
+    rpc::select<rpc::se_in,rpc::stream> s(k,[](rpc::stream &&s){
+        char u[128];
+        memset(u, 0, 128);
+        s.read(u, 128);
+        std::cout << u << std::endl;
+        return 1;
+    });
+    s.add(dupin.fd);
+
+   while (true)
+   {
+
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        dupout.write("hello world\n", 12);
+   }
+   
+}
+
+
+void unix(){
+     pid_t p = fork();
 
     if (p == 0)
     {
@@ -60,7 +88,7 @@ int main(int, char **)
         timeval k;
         k.tv_sec = 1;
         k.tv_usec = 0;
-        rpc::select<rpc::event_in,rpc::stream> sl(k, [](rpc::stream fd)
+        rpc::select<rpc::se_in,rpc::stream> sl(k, [](rpc::stream fd)
                                       {
                                           
                                           fd.setStatus(rpc::nonblock);

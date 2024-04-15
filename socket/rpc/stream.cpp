@@ -140,6 +140,11 @@ int rpc::stream::close() const
     return ::close(fd);
 }
 
+rpc::stream rpc::stream::dup(int fd)
+{
+    return stream(::dup(fd));
+}
+
 rpc::file::file(const char *path, rpc::status status) : stream(open(path, status))
 {
 }

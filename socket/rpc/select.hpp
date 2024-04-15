@@ -12,15 +12,15 @@ namespace rpc
 
     enum select_event
     {
-        event_in,
-        event_out,
-        event_err
+        se_in,
+        se_out,
+        se_err
     };
     template <select_event se,typename FD>
     class select
     {
     public:
-        select(timeval time, std::function<int(FD)> callback)
+        select(timeval time, std::function<int(FD&&)> callback)
         {
             bool* c_running = new bool(true);
             std::mutex* c_lock = new std::mutex();
@@ -36,9 +36,9 @@ namespace rpc
                     auto maxfd = this->load_set(*c_fds,&m_sets);
                     c_lock->unlock();
                     int count;
-                    if(se == event_out){
+                    if(se == se_out){
                         count = ::select(maxfd + 1,nullptr,&m_sets,nullptr,(struct timeval *)&time);
-                    }else if(se == event_err){
+                    }else if(se == se_err){
                         count = ::select(maxfd + 1,nullptr,nullptr,&m_sets,(struct timeval *)&time);
                     }else{
                         count = ::select(maxfd + 1,&m_sets,nullptr,nullptr,(struct timeval *)&time);
