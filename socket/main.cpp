@@ -5,11 +5,28 @@
 #include "rpc/select.hpp"
 #include <sys/un.h>
 #include <thread>
+#include "rpc/event.hpp"
 void pipte();
 void dupTest();
 int main(int, char **)
 {
-    pipte();
+    int kq = kqueue();
+    rpc::event e(1,rpc::add,rpc::timer,rpc::millseconds,1000);
+    e.change(kq);
+    while (true)
+    {
+        timespec k;
+        k.tv_sec = 10;
+        k.tv_nsec = 0;
+        std::vector<rpc::event> res;
+        int i = rpc::event::wait<2>(kq,&k,res);
+        std::cout << i << res[0].occur_error()<< std::endl;
+
+        rpc::event e(1,rpc::receipt,rpc::timer,(rpc::event_note)0,0);
+        e.change(kq);
+    }
+    
+    // pipte();
 }
 
 void dupTest()
