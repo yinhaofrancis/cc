@@ -11,8 +11,12 @@ void dupTest();
 int main(int, char **)
 {
     int kq = kqueue();
-    rpc::event e(1,rpc::add,rpc::timer,rpc::millseconds,1000);
-    e.change(kq);
+    signal(SIGINT,SIG_IGN);
+    rpc::event e(1,rpc::add,rpc::timer,rpc::millseconds,5000);
+    rpc::event s(SIGINT,rpc::add,rpc::signal,rpc::none_note,0);
+    NOTE_FORK
+    e.mount(kq);
+    s.mount(kq);
     while (true)
     {
         timespec k;
@@ -20,10 +24,11 @@ int main(int, char **)
         k.tv_nsec = 0;
         std::vector<rpc::event> res;
         int i = rpc::event::wait<2>(kq,&k,res);
-        std::cout << i << res[0].occur_error()<< std::endl;
-
-        rpc::event e(1,rpc::receipt,rpc::timer,(rpc::event_note)0,0);
-        e.change(kq);
+        for (auto &&i : res)
+        {
+            std::cout << i.et << std::endl;
+        }
+        
     }
     
     // pipte();

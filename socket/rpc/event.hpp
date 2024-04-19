@@ -12,6 +12,7 @@ namespace rpc
         read = EVFILT_READ,
         write = EVFILT_WRITE,
         timer = EVFILT_TIMER,
+        signal = EVFILT_SIGNAL,
     };
     enum event_op{
         add = EV_ADD,
@@ -26,13 +27,19 @@ namespace rpc
     event_op operator|(event_op lhs,event_op rhs){
         return (event_op)((int)lhs | (int)rhs);
     }
+   
     enum event_note{
+        none_note = 0,
         seconds = NOTE_SECONDS,
         millseconds = 0,
         microseconds = NOTE_USECONDS,
         nanoseconds = NOTE_NSECONDS,
         absolute = NOTE_ABSOLUTE,
     };
+
+    event_note operator|(event_note lhs,event_note rhs){
+        return (event_note)((int)lhs | (int)rhs);
+    }
     class event{
     public:
         event(int ident,event_op op,event_type et,event_note note,int64_t data)
@@ -50,7 +57,7 @@ namespace rpc
         ,data(event.data){
 
         }
-        void change(int kq){
+        void mount(int kq){
             struct kevent change;
             EV_SET(&change,ident,et,op,note,data,0);
             kevent(kq,&change,1,nullptr,0,nullptr);
