@@ -6,7 +6,7 @@
 #include<vector>
 #include<array>
 
-namespace rpc
+namespace ipc
 {
     enum event_type {
         read = EVFILT_READ,
@@ -84,7 +84,7 @@ namespace rpc
         event_op op;
 
     };
-} // namespace rpc
+} // namespace ipc
 
 #endif
 

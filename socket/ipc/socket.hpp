@@ -5,7 +5,7 @@
 #include "define.hpp"
 #include "stream.hpp"
 
-namespace rpc
+namespace ipc
 {   
      enum socket_option{
         reuse_addr  =   SO_REUSEADDR,
@@ -36,25 +36,21 @@ namespace rpc
         int connect(address<d> addr) const{
             return ::connect(stream::fd,addr.raw(),addr.size());
         }
-        int sendto(address<d> addr,const void* buffer,size_t len,int flags) const{
-            static_assert(s == dgram,"sock is not dgram");
+        int sendto(address<d> addr,const void* buffer,size_t len,int flags) const{;
             return ::sendto(stream::fd,buffer,len,flags,addr.raw(),addr.size());
         }
         int recvfrom(address<d> addr,void* buffer,size_t len,int flags) const{
-            static_assert(s == dgram,"sock is not dgram");
             return ::recvfrom(stream::fd,buffer,len,flags,addr.raw(),addr.size());
         }
         int send(const void* buffer,size_t len) const{
-            static_assert(s == sock::strm,"sock is not stream");
             return stream::send(buffer,len);
         }
-        rpc::stream accept(address<d> &addr) const {
+        ipc::stream accept(address<d> &addr) const {
             socklen_t size;
             int fd = ::accept(stream::fd,(sockaddr*)addr.raw(),&size);
-            return rpc::stream(fd);
+            return ipc::stream(fd);
         }
         int recv(void* buffer,size_t len,int flags) const{
-            static_assert(s == sock::strm,"sock is not stream");
             return stream::recv(stream::fd,buffer,len);
         }
         int setOption(socket_option op,int flag) const{
@@ -65,7 +61,7 @@ namespace rpc
         const protocol m_protocol = p;
         
     };
-} // namespace rpc
+} // namespace ipc
 
 #endif
 

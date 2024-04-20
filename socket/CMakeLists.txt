@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.20.0)
 project(rpc_test VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 20)
-add_subdirectory(rpc)
+add_subdirectory(ipc)
 
-add_executable(rpc_test main.cpp)
+add_executable(ipc_test main.cpp)
 
 
-target_link_libraries(rpc_test rpc)
+target_link_libraries(ipc_test ipc)

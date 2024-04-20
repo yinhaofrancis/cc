@@ -1,14 +1,14 @@
 #include "stream.hpp"
 
-rpc::stream::stream(int fd) : fd(fd) {}
+ipc::stream::stream(int fd) : fd(fd) {}
 
-rpc::stream::stream(stream & s):fd(s.fd)
+ipc::stream::stream(stream & s):fd(s.fd)
 {}
 
-rpc::stream::stream(stream && s):fd(s.fd)
+ipc::stream::stream(stream && s):fd(s.fd)
 {}
 
-size_t rpc::stream::read(void *buf, size_t len) const
+size_t ipc::stream::read(void *buf, size_t len) const
 {
     char *cur = reinterpret_cast<char *>(buf);
     size_t space = len;
@@ -40,7 +40,7 @@ size_t rpc::stream::read(void *buf, size_t len) const
     return len - space;
 }
 
-size_t rpc::stream::write(const void *buf, size_t len) const
+size_t ipc::stream::write(const void *buf, size_t len) const
 {
     char *cur = (char *)(buf);
     size_t space = len;
@@ -67,7 +67,7 @@ size_t rpc::stream::write(const void *buf, size_t len) const
     }
     return len - space;
 }
-size_t rpc::stream::send(const void *buf, size_t len) const
+size_t ipc::stream::send(const void *buf, size_t len) const
 {
     char *cur = (char *)(buf);
     size_t space = len;
@@ -94,7 +94,7 @@ size_t rpc::stream::send(const void *buf, size_t len) const
     }
     return len - space;
 }
-size_t rpc::stream::recv(void *buf, size_t len) const
+size_t ipc::stream::recv(void *buf, size_t len) const
 {
     char *cur = reinterpret_cast<char *>(buf);
     size_t space = len;
@@ -125,64 +125,64 @@ size_t rpc::stream::recv(void *buf, size_t len) const
     }
     return len - space;
 }
-rpc::status rpc::stream::status() const
+ipc::status ipc::stream::status() const
 {
-    return rpc::status(fcntl(fd, F_GETFL));
+    return ipc::status(fcntl(fd, F_GETFL));
 }
 
-int rpc::stream::setStatus(rpc::status status) const
+int ipc::stream::setStatus(ipc::status status) const
 {
     return fcntl(fd, F_SETFL, status);
 }
 
-int rpc::stream::close() const
+int ipc::stream::close() const
 {
     return ::close(fd);
 }
 
-rpc::stream rpc::stream::dup(int fd)
+ipc::stream ipc::stream::dup(int fd)
 {
     return stream(::dup(fd));
 }
 
-rpc::file::file(const char *path, rpc::status status) : stream(open(path, status))
+ipc::file::file(const char *path, ipc::status status) : stream(open(path, status))
 {
 }
 
-off_t rpc::file::seek(off_t offset, whence w)
+off_t ipc::file::seek(off_t offset, whence w)
 {
     return ::lseek(fd, offset, w);
 }
 
-int rpc::file::truncate(off_t offset)
+int ipc::file::truncate(off_t offset)
 {
     return ::ftruncate(fd, offset);
 }
 
-int rpc::file::umask(mode_t mode)
+int ipc::file::umask(mode_t mode)
 {
     return umask(mode);
 }
 
-int rpc::file::mkfifo(const char *path, mode_t mode)
+int ipc::file::mkfifo(const char *path, mode_t mode)
 {
     return ::mkfifo(path,mode);
 }
 
-rpc::status operator|(rpc::status v1, rpc::status v2)
+ipc::status operator|(ipc::status v1, ipc::status v2)
 {
-    return rpc::status((int)v1 | (int)v2);
+    return ipc::status((int)v1 | (int)v2);
 }
 
-rpc::pipe::pipe()
+ipc::pipe::pipe()
 {
     int fds[2];
     ::pipe(fds);
-    m_rpipe = new rpc::stream(fds[0]);
-    m_wpipe = new rpc::stream(fds[1]);
+    m_rpipe = new ipc::stream(fds[0]);
+    m_wpipe = new ipc::stream(fds[1]);
 }
 
-void rpc::pipe::close() const
+void ipc::pipe::close() const
 {
     m_rpipe->close();
     m_wpipe->close();
@@ -190,12 +190,12 @@ void rpc::pipe::close() const
     delete m_wpipe;
 }
 
-const rpc::stream &rpc::pipe::rpipe() const
+const ipc::stream &ipc::pipe::rpipe() const
 {
     return *m_rpipe;
 }
 
-const rpc::stream &rpc::pipe::wpipe() const
+const ipc::stream &ipc::pipe::wpipe() const
 {
     return *m_wpipe;
 }

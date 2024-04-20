@@ -13,7 +13,7 @@
 #include <string>
 #include <cstring>
 
-namespace rpc
+namespace ipc
 {
     enum domain
     {
@@ -185,6 +185,6 @@ namespace rpc
     private:
         uint8_t buffer[256];
     };
-} // namespace rpc
+} // namespace ipc
 
 #endif

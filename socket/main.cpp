@@ -1,11 +1,12 @@
 #include <iostream>
-#include "rpc/define.hpp"
-#include "rpc/stream.hpp"
-#include "rpc/socket.hpp"
-#include "rpc/select.hpp"
+#include "ipc/define.hpp"
+#include "ipc/stream.hpp"
+#include "ipc/socket.hpp"
+#include "ipc/select.hpp"
 #include <sys/un.h>
 #include <thread>
-#include "rpc/event.hpp"
+#include "ipc/event.hpp"
+#include <sys/sockio.h>
 void pipte();
 void dupTest();
 void unixf();
@@ -23,9 +24,9 @@ void kqueue(){
     #if __APPLE__
      int kq = kqueue();
     signal(SIGINT,SIG_IGN);
-    rpc::event e(1,rpc::add,rpc::timer,rpc::millseconds,5000);
-    rpc::event s(SIGINT,rpc::add,rpc::signal,rpc::none_note,0);
-    NOTE_FORK
+    ipc::event e(1,ipc::add,ipc::timer,ipc::millseconds,5000);
+    ipc::event s(SIGINT,ipc::add,ipc::signal,ipc::none_note,0);
+
     e.mount(kq);
     s.mount(kq);
     while (true)
@@ -33,8 +34,8 @@ void kqueue(){
         timespec k;
         k.tv_sec = 10;
         k.tv_nsec = 0;
-        std::vector<rpc::event> res;
-        int i = rpc::event::wait<2>(kq,&k,res);
+        std::vector<ipc::event> res;
+        int i = ipc::event::wait<2>(kq,&k,res);
         for (auto &&i : res)
         {
             std::cout << i.et << std::endl;
@@ -45,15 +46,15 @@ void kqueue(){
 }
 void dupTest()
 {
-    auto dupout = rpc::stream::dup(STDOUT_FILENO);
-    dupout.setStatus(rpc::nonblock);
-    auto dupin = rpc::stream::dup(STDIN_FILENO);
-    dupin.setStatus(rpc::nonblock);
+    auto dupout = ipc::stream::dup(STDOUT_FILENO);
+    dupout.setStatus(ipc::nonblock);
+    auto dupin = ipc::stream::dup(STDIN_FILENO);
+    dupin.setStatus(ipc::nonblock);
 
     timeval k;
     k.tv_sec = 1;
     k.tv_usec = 0;
-    rpc::select<rpc::se_in, rpc::stream> s(k, [](rpc::stream &&s)
+    ipc::select<ipc::se_in, ipc::stream> s(k, [](ipc::stream &&s)
                                            {
         char u[128];
         memset(u, 0, 128);
@@ -72,8 +73,8 @@ void dupTest()
 
 void pipte()
 {
-    rpc::pipe p;
-    p.rpipe().setStatus(rpc::nonblock);
+    ipc::pipe p;
+    p.rpipe().setStatus(ipc::nonblock);
     pid_t pid = fork();
 
     if (pid == 0)
@@ -91,7 +92,7 @@ void pipte()
         timeval k;
         k.tv_sec = 1;
         k.tv_usec = 0;
-        rpc::select<rpc::se_in, rpc::stream> sl(k, [](rpc::stream &&fd)
+        ipc::select<ipc::se_in, ipc::stream> sl(k, [](ipc::stream &&fd)
                                                 {
             char k[100];
             memset(k,0,100);
@@ -143,7 +144,7 @@ void unixf()
 
         rpc::address<rpc::domain::local> client("");
 
-        rpc::stream cliet = s.accept(client);
+        ipc::stream cliet = s.accept(client);
 
         if (cliet.fd == -1)
         {
@@ -154,10 +155,10 @@ void unixf()
         timeval k;
         k.tv_sec = 1;
         k.tv_usec = 0;
-        rpc::select<rpc::se_in, rpc::stream> sl(k, [](rpc::stream fd)
+        ipc::select<ipc::se_in, ipc::stream> sl(k, [](ipc::stream fd)
                                                 {
                                           
-                                          fd.setStatus(rpc::nonblock);
+                                          fd.setStatus(ipc::nonblock);
                                           char buff[1024];
 
                                           memset(buff, 0, 1024);

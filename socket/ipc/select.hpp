@@ -7,7 +7,7 @@
 #include <thread>
 #include <functional>
 
-namespace rpc
+namespace ipc
 {
 
     enum select_event
@@ -105,6 +105,6 @@ namespace rpc
             return max;
         }
     };
-} // namespace rpc
+} // namespace ipc
 
 #endif
