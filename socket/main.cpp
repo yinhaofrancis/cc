@@ -12,15 +12,15 @@ void dupTest();
 void unixf();
 int main(int, char **)
 {
-    rpc::address<rpc::domain::local> addr1("12345678901234567890123456789012345678901234567890123456789012345678901234567890");
+    ipc::address<ipc::domain::local> addr1("12345678901234567890123456789012345678901234567890123456789012345678901234567890");
     addr1.size();
 
-rpc::address<rpc::domain::local> addr2("890");
+ipc::address<ipc::domain::local> addr2("890");
     addr2.size();
 
 
 }
-void kqueue(){
+void fkqueue(){
     #if __APPLE__
      int kq = kqueue();
     signal(SIGINT,SIG_IGN);
@@ -110,9 +110,9 @@ void unixf()
     pid_t p = fork();
     if (p == 0)
     {
-        rpc::socket<rpc::domain::local, rpc::sock::strm, rpc::protocol::none> s;
+        ipc::socket<ipc::domain::local, ipc::sock::strm, ipc::protocol::none> s;
 
-        rpc::address<rpc::domain::local> addr("um");
+        ipc::address<ipc::domain::local> addr("um");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         s.connect(addr);
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -129,9 +129,9 @@ void unixf()
     }
     else if (p > 0)
     {
-        rpc::socket<rpc::domain::local, rpc::sock::strm, rpc::protocol::none> s;
+        ipc::socket<ipc::domain::local, ipc::sock::strm, ipc::protocol::none> s;
 
-        rpc::address<rpc::domain::local> addr("um");
+        ipc::address<ipc::domain::local> addr("um");
         if (s.bind(addr) == -1)
         {
             std::cout << strerror(errno) << std::endl;
@@ -142,7 +142,7 @@ void unixf()
             std::cout << strerror(errno) << std::endl;
         }
 
-        rpc::address<rpc::domain::local> client("");
+        ipc::address<ipc::domain::local> client("");
 
         ipc::stream cliet = s.accept(client);
 

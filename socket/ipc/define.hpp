@@ -88,7 +88,7 @@ namespace ipc
     public:
         address(const char *path)
         {
-            static_assert(d == unix,"domain is not unix");
+            static_assert(d == local,"domain is not unix");
             static_assert(sizeof(path) < 104,"path len too large");
             memset(buffer, 0, sizeof(buffer));
             sockaddr_un *addr = reinterpret_cast<sockaddr_un *>(buffer);
@@ -123,8 +123,8 @@ namespace ipc
         const domain m_domain = d;
 
         std::string path(){
-            static_assert(d == unix , "domain is not unix");
-            if (d == unix){
+            static_assert(d == local , "domain is not unix");
+            if (d == local){
                 sockaddr_un *addr = reinterpret_cast<sockaddr_un *>(buffer);
                 return std::string(addr->sun_path);
             }
@@ -175,8 +175,7 @@ namespace ipc
             {
                 return sizeof(sockaddr_in6);
             }
-            else if (d == unix){
-                std::cout << SUN_LEN((sockaddr_un*)this->raw()) << std::endl << sizeof(sockaddr_un) << std::endl;
+            else if (d == local){
                 return sizeof(sockaddr_un);
             }
             return 0;
