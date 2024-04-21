@@ -1,6 +1,6 @@
 #ifndef __EVENT_HPP__
 #define __EVENT_HPP__
-
+#if __APPLE__ || __UNIX
 #include<sys/event.h> 
 #include<sys/types.h>
 #include<vector>
@@ -86,7 +86,7 @@ namespace rpc
     };
 } // namespace rpc
 
-
+#endif
 
 
 #endif

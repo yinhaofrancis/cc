@@ -2,10 +2,10 @@
 #define SELECT_HPP
 #include <sys/select.h>
 #include <sys/poll.h>
-#include <sys/event.h>
 #include <sys/types.h>
 #include <vector>
 #include <thread>
+#include <functional>
 
 namespace rpc
 {

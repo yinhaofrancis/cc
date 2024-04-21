@@ -1,5 +1,6 @@
 #ifndef define_hpp
 #define define_hpp
+#include <iostream>
 
 #include <netdb.h>
 #include <netinet/in.h>
@@ -9,6 +10,8 @@
 #include <string>
 #include <fcntl.h>
 #include <sys/un.h>
+#include <string>
+#include <cstring>
 
 namespace rpc
 {
@@ -19,7 +22,7 @@ namespace rpc
 
         ipv6 = AF_INET6,
 
-        unix = AF_UNIX,
+        local = AF_UNIX,
 
         unspec = AF_UNSPEC,
 
@@ -91,9 +94,10 @@ namespace rpc
             sockaddr_un *addr = reinterpret_cast<sockaddr_un *>(buffer);
             addr->sun_family = AF_UNIX;
             strcpy(addr->sun_path,path);
+            #if __APPLE || __UNIX__
             addr->sun_len = strlen(path);
+            #endif
         }
-
         address(const char *ip, uint16_t port)
         {
             static_assert(d == ipv4 || d == ipv6, "domain is not ipv4 or ipv6");
@@ -172,6 +176,7 @@ namespace rpc
                 return sizeof(sockaddr_in6);
             }
             else if (d == unix){
+                std::cout << SUN_LEN((sockaddr_un*)this->raw()) << std::endl << sizeof(sockaddr_un) << std::endl;
                 return sizeof(sockaddr_un);
             }
             return 0;

@@ -8,9 +8,20 @@
 #include "rpc/event.hpp"
 void pipte();
 void dupTest();
+void unixf();
 int main(int, char **)
 {
-    int kq = kqueue();
+    rpc::address<rpc::domain::local> addr1("12345678901234567890123456789012345678901234567890123456789012345678901234567890");
+    addr1.size();
+
+rpc::address<rpc::domain::local> addr2("890");
+    addr2.size();
+
+
+}
+void kqueue(){
+    #if __APPLE__
+     int kq = kqueue();
     signal(SIGINT,SIG_IGN);
     rpc::event e(1,rpc::add,rpc::timer,rpc::millseconds,5000);
     rpc::event s(SIGINT,rpc::add,rpc::signal,rpc::none_note,0);
@@ -30,10 +41,8 @@ int main(int, char **)
         }
         
     }
-    
-    // pipte();
+    #endif
 }
-
 void dupTest()
 {
     auto dupout = rpc::stream::dup(STDOUT_FILENO);
@@ -95,14 +104,14 @@ void pipte()
         std::this_thread::sleep_for(std::chrono::seconds(1000));
     }
 }
-void unix()
+void unixf()
 {
     pid_t p = fork();
     if (p == 0)
     {
-        rpc::socket<rpc::domain::unix, rpc::sock::strm, rpc::protocol::none> s;
+        rpc::socket<rpc::domain::local, rpc::sock::strm, rpc::protocol::none> s;
 
-        rpc::address<rpc::domain::unix> addr("um");
+        rpc::address<rpc::domain::local> addr("um");
         std::this_thread::sleep_for(std::chrono::seconds(3));
         s.connect(addr);
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -119,9 +128,9 @@ void unix()
     }
     else if (p > 0)
     {
-        rpc::socket<rpc::domain::unix, rpc::sock::strm, rpc::protocol::none> s;
+        rpc::socket<rpc::domain::local, rpc::sock::strm, rpc::protocol::none> s;
 
-        rpc::address<rpc::domain::unix> addr("um");
+        rpc::address<rpc::domain::local> addr("um");
         if (s.bind(addr) == -1)
         {
             std::cout << strerror(errno) << std::endl;
@@ -132,7 +141,7 @@ void unix()
             std::cout << strerror(errno) << std::endl;
         }
 
-        rpc::address<rpc::domain::unix> client("");
+        rpc::address<rpc::domain::local> client("");
 
         rpc::stream cliet = s.accept(client);
 
