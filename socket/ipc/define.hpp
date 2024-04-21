@@ -66,9 +66,9 @@ namespace ipc
     {
         nonblock = O_NONBLOCK,
 
-        rd_only = O_RDONLY,
+        rdo = O_RDONLY,
 
-        wr_only = O_WRONLY,
+        wro = O_WRONLY,
 
         append = O_APPEND,
 

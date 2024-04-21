@@ -48,13 +48,50 @@ namespace ipc
             seekcur = SEEK_CUR,
             seekend = SEEK_END
         };
+        enum lockopt
+        {
+            read_lock = F_RDLCK,
+            write_lock = F_WRLCK,
+            ulock = F_UNLCK
+        };
+        
+        struct lock
+        {
+            lockopt m_opt;
+            off_t m_start;
+            off_t m_len;
+            whence m_whence;
+        };
+
+        enum mode{
+            ur = S_IRUSR,
+            uw = S_IWUSR,
+            ux = S_IXUSR,
+            
+            gr = S_IRGRP,
+            gw = S_IWGRP,
+            gx = S_IXGRP,
+
+            rr = S_IROTH,
+            rw = S_IWOTH,
+            rx = S_IXOTH,
+            normask = 0027,
+            normal  = 0750
+        };
+        
     public:
         file(const char *path,ipc::status status);
         off_t seek(off_t offset,whence w);
         int truncate(off_t offset);
-        static int umask(mode_t mode);
-        static int mkfifo(const char* path,mode_t mode);
+        int rlock(lock&);
+        int wlock(lock&);
+        int unlock(lock&);
+        pid_t hasLock(lock&);
+        static int umask(mode mode);
+        int chmod(mode);
+        static stream mkfifo(const char* path,mode_t mode);
     };
+    ipc::file::mode operator | (ipc::file::mode r,ipc::file::mode l);
 } // namespace ipc
 
 #endif

@@ -6,26 +6,38 @@
 #include <sys/un.h>
 #include <thread>
 #include "ipc/event.hpp"
-#include <sys/sockio.h>
+
 void pipte();
 void dupTest();
 void unixf();
 int main(int, char **)
 {
-    ipc::address<ipc::domain::local> addr1("12345678901234567890123456789012345678901234567890123456789012345678901234567890");
-    addr1.size();
-
-ipc::address<ipc::domain::local> addr2("890");
-    addr2.size();
-
-
+    ipc::file::umask(ipc::file::normask);
+    ipc::file f("mm", ipc::rw | ipc::creat);
+    f.chmod(ipc::file::normal);
+    ipc::file::lock l;
+    l.m_start = 0;
+    l.m_len = 10;
+    l.m_whence = ipc::file::seekset;
+    int ret = f.wlock(l);
+    if (ret < 0)
+    {
+        std::cout << strerror(errno) << std::endl;
+    }
+    ret = f.rlock(l);
+    if (ret < 0)
+    {
+        std::cout << strerror(errno) << std::endl;
+    }
+    f.close();
 }
-void fkqueue(){
-    #if __APPLE__
-     int kq = kqueue();
-    signal(SIGINT,SIG_IGN);
-    ipc::event e(1,ipc::add,ipc::timer,ipc::millseconds,5000);
-    ipc::event s(SIGINT,ipc::add,ipc::signal,ipc::none_note,0);
+void fkqueue()
+{
+#if __APPLE__
+    int kq = kqueue();
+    signal(SIGINT, SIG_IGN);
+    ipc::event e(1, ipc::add, ipc::timer, ipc::millseconds, 5000);
+    ipc::event s(SIGINT, ipc::add, ipc::signal, ipc::none_note, 0);
 
     e.mount(kq);
     s.mount(kq);
@@ -35,14 +47,13 @@ void fkqueue(){
         k.tv_sec = 10;
         k.tv_nsec = 0;
         std::vector<ipc::event> res;
-        int i = ipc::event::wait<2>(kq,&k,res);
+        int i = ipc::event::wait<2>(kq, &k, res);
         for (auto &&i : res)
         {
             std::cout << i.et << std::endl;
         }
-        
     }
-    #endif
+#endif
 }
 void dupTest()
 {
@@ -98,9 +109,8 @@ void pipte()
             memset(k,0,100);
             fd.read(k,100);
             std::cout << k << std::endl; 
-            return 1;
-        });
-            
+            return 1; });
+
         sl.add(p.rpipe());
         std::this_thread::sleep_for(std::chrono::seconds(1000));
     }
