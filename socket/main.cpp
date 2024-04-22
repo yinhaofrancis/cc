@@ -30,6 +30,8 @@ int main(int, char **)
         std::cout << strerror(errno) << std::endl;
     }
     f.close();
+    auto uid = getuid();
+    
 }
 void fkqueue()
 {

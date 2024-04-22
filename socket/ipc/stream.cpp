@@ -163,7 +163,7 @@ int ipc::file::truncate(off_t offset)
 
 int ipc::file::rlock(lock &lock)
 {
-    flock l;
+    struct flock l;
     l.l_type = (short)ipc::file::lockopt::read_lock;
     l.l_start = lock.m_start;
     l.l_len = lock.m_len;
@@ -173,7 +173,7 @@ int ipc::file::rlock(lock &lock)
 
 int ipc::file::wlock(lock &lk)
 {
-    flock l;
+    struct flock l;
     l.l_type = (short)ipc::file::lockopt::write_lock;
     l.l_start = lk.m_start;
     l.l_len = lk.m_len;
@@ -183,7 +183,7 @@ int ipc::file::wlock(lock &lk)
 
 int ipc::file::unlock(lock &lk)
 {
-    flock l;
+    struct flock l;
     l.l_type = (short)ipc::file::lockopt::ulock;
     l.l_start = lk.m_start;
     l.l_len = lk.m_len;
@@ -193,7 +193,7 @@ int ipc::file::unlock(lock &lk)
 
 pid_t ipc::file::hasLock(lock &lk)
 {
-    flock l;
+    struct flock l;
     l.l_type = (short)lk.m_opt;
     l.l_start = lk.m_start;
     l.l_len = lk.m_len;
